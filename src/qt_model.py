@@ -29,7 +29,7 @@ class GRUEncoder(nn.Module):
         unpacked, _ = pad_packed_sequence(packed_output)
         idx = (lengths - 1).view(-1, 1).expand(unpacked.size(1),
                                                unpacked.size(2)).unsqueeze(0).to(self.device)
-        return unpacked.gather(0, idx).squeeze()
+        return unpacked.gather(0, idx).squeeze(0)
 
 
 class TransformerEncoder(nn.Module):
