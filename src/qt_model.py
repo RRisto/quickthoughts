@@ -1,21 +1,24 @@
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from src.transformer_model import PositionalEncoding, PositionwiseFeedForward, MultiHeadedAttention, Encoder, EncoderLayer
+from src.transformer_model import PositionalEncoding, PositionwiseFeedForward, MultiHeadedAttention, Encoder, \
+    EncoderLayer
 from src.utils import log_param_info
 from scipy.linalg import block_diag
 import numpy as np
 
 
 class GRUEncoder(nn.Module):
-    def __init__(self, wv_model, hidden_size, bidirectional, dropout, cuda=False):
+    def __init__(self, embedding_vectors, hidden_size, bidirectional, dropout, cuda=False):
         super(GRUEncoder, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         self.hidden_size = hidden_size
-        self.embeddings = nn.Embedding(*wv_model.vectors.shape)
-        self.embeddings.weight = nn.Parameter(torch.from_numpy(wv_model.vectors))
+        # self.embeddings = nn.Embedding(*wv_model.vectors.shape)
+        # self.embeddings.weight = nn.Parameter(torch.from_numpy(wv_model.vectors))
+        self.embeddings = nn.Embedding(*embedding_vectors.shape)
+        self.embeddings.weight = nn.Parameter(torch.from_numpy(embedding_vectors))
         self.bidirectional = bidirectional
-        self.gru = nn.GRU(wv_model.vectors.shape[1], hidden_size, dropout=dropout, bidirectional=bidirectional)
+        self.gru = nn.GRU(embedding_vectors.shape[1], hidden_size, dropout=dropout, bidirectional=bidirectional)
 
     # input should be a packed sequence                                                    
     def forward(self, packed_input):

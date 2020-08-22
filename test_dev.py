@@ -1,5 +1,5 @@
 from learner import QTLearner
-from src.config import CONFIG
+from src.config_dev import CONFIG
 
 if __name__ == '__main__':
     learner = QTLearner(CONFIG['checkpoint_dir'], CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],

@@ -5,3 +5,4 @@ src/data/__pycache__/*
 data/*
 .vscode/*
 .idea/*
+embedding_models/*

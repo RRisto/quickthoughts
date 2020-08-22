@@ -1,4 +1,3 @@
-import itertools
 from tqdm import tqdm
 from gensim.utils import tokenize
   

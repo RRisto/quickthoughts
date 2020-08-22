@@ -8,22 +8,28 @@ from torch.utils.data.dataloader import DataLoader
 from src.data.bookcorpus import BookCorpus
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
-# from src.config import CONFIG
+from src.data.vocab import Vocab
 from pprint import pformat
 from tqdm import tqdm
-import gensim.downloader as api
+from gensim.models import KeyedVectors
 from pathlib import Path
-import os
-import json
+
 from src.eval import test_performance
 
 _LOGGER = logging.getLogger(__name__)
 
 
+def get_wordvectors_vocab(wordvectors):
+    return wordvectors.wv.vocab
+
+
+def load_wordvectors_model(path_to_model):
+    return KeyedVectors.load(path_to_model)
+
+
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-                 norm_threshold,
-                 config_file_name='config.json'):
+                 norm_threshold, config_file_name='config.json'):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.embedding = embedding
@@ -55,15 +61,15 @@ class QTLearner:
         _LOGGER.info(pformat(self.gather_conf_info()))
         _LOGGER.info(f"Wrote config to file: {self.config_filepath}")
 
-    def create_dataset(self, WV_MODEL):
-        bookcorpus = BookCorpus(self.data_path, WV_MODEL.vocab)
+    def create_dataset(self, wv_vocab):
+        bookcorpus = BookCorpus(self.data_path, wv_vocab)
         train_iter = DataLoader(bookcorpus,
                                 batch_size=self.batch_size,
                                 num_workers=1,
                                 drop_last=True,
                                 pin_memory=True,  # send to GPU
                                 collate_fn=safe_pack_sequence)
-        return train_iter
+        return train_iter, bookcorpus
 
     def fit_epoch(self, train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter, WV_MODEL):
         temp = tqdm(train_iter)
@@ -84,11 +90,6 @@ class QTLearner:
 
                 # forward pass
                 enc_f, enc_g = qt(data)
-
-                # for k in range(0, CONFIG['batch_size'], block_size):
-                # avg = enc_g[k:k+block_size].mean(dim=0)
-                # for l in range(block_size):
-                # enc_g[k+l, :] = avg - enc_g[k+l, :]
 
                 # calculate scores
                 scores = torch.matmul(enc_f, enc_g.t())
@@ -135,11 +136,16 @@ class QTLearner:
         self._init_logging()
 
         plotter = VisdomLinePlotter()
-        WV_MODEL = api.load(self.embedding)
-        train_iter = self.create_dataset(WV_MODEL)
+        WV_MODEL = load_wordvectors_model(self.embedding)
+        train_iter, corpus = self.create_dataset(get_wordvectors_vocab(WV_MODEL))
+
+        vocab = Vocab(corpus.vocab)
+        pretrained_embeddings = vocab.get_pretrained_embeddings(WV_MODEL, WV_MODEL.vector_size)
 
         # model, optimizer, and loss function
-        qt = QuickThoughts(WV_MODEL, self.hidden_size)
+        # qt = QuickThoughts(WV_MODEL, self.hidden_size)
+        # qt = QuickThoughts(WV_MODEL.wv.vectors, self.hidden_size)
+        qt = QuickThoughts(pretrained_embeddings, self.hidden_size)
         if torch.cuda.is_available():
             qt = qt.cuda()
 
@@ -154,9 +160,8 @@ class QTLearner:
         block_size = 5
 
         for j in range(self.num_epochs):
-            self.fit_epoch(train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter, WV_MODEL)
-
-        pass
+            self.fit_epoch(train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter,
+                           WV_MODEL)
 
     def check_conf(self):
         pass
