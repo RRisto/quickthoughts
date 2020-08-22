@@ -121,7 +121,7 @@ class QTLearner:
                     qt.eval()
                     # for dataset in ['MR', 'CR', 'MPQA', 'SUBJ']:
                     for dataset in ['MR']:
-                        acc = test_performance(qt, WV_MODEL.vocab, dataset, '../data', seed=int(time.time()))
+                        acc = test_performance(qt, WV_MODEL.vocab, dataset, 'data', seed=int(time.time()))
                         plotter.plot('acc', dataset, 'Downstream Accuracy', i, acc, xlabel='seconds')
                     qt.train()
 
