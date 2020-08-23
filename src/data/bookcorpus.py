@@ -17,7 +17,7 @@ class BookCorpus(Dataset):
         with open(file_path) as f:
             self.examples = list(f)
         _LOGGER.info("Successfully read {} lines from file: {}".format(len(self.examples), file_path))
-        self.get_tokens()
+        self.get_vocab()
 
     def __getitem__(self, i):
         return torch.LongTensor(prepare_sequence(self.examples[i], self.vocab))
@@ -25,7 +25,7 @@ class BookCorpus(Dataset):
     def __len__(self):
         return len(self.examples)
 
-    def get_tokens(self):
+    def get_vocab(self):
         tokens = [list(tokenize(text, lowercase=True)) for text in self.examples]
         tokens = [item for sublist in tokens for item in sublist]
         freq = collections.Counter(tokens)

@@ -71,7 +71,7 @@ class QTLearner:
                                 collate_fn=safe_pack_sequence)
         return train_iter, bookcorpus
 
-    def fit_epoch(self, train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter, WV_MODEL):
+    def fit_epoch(self, train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter, vocab):
         temp = tqdm(train_iter)
 
         for i, data in enumerate(temp):
@@ -122,7 +122,7 @@ class QTLearner:
                     qt.eval()
                     # for dataset in ['MR', 'CR', 'MPQA', 'SUBJ']:
                     for dataset in ['MR']:
-                        acc = test_performance(qt, WV_MODEL.vocab, dataset, 'data', seed=int(time.time()))
+                        acc = test_performance(qt, vocab.vocab, dataset, 'data', seed=int(time.time()))
                         plotter.plot('acc', dataset, 'Downstream Accuracy', i, acc, xlabel='seconds')
                     qt.train()
 
@@ -160,8 +160,7 @@ class QTLearner:
         block_size = 5
 
         for j in range(self.num_epochs):
-            self.fit_epoch(train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter,
-                           WV_MODEL)
+            self.fit_epoch(train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter, vocab)
 
     def check_conf(self):
         pass
