@@ -9,16 +9,29 @@ import numpy as np
 
 
 class GRUEncoder(nn.Module):
-    def __init__(self, embedding_vectors, hidden_size, bidirectional, dropout, cuda=False):
+    def __init__(self, embedding_vectors, vocab, hidden_size, bidirectional, dropout, cuda=False):
         super(GRUEncoder, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         self.hidden_size = hidden_size
-        # self.embeddings = nn.Embedding(*wv_model.vectors.shape)
-        # self.embeddings.weight = nn.Parameter(torch.from_numpy(wv_model.vectors))
-        self.embeddings = nn.Embedding(*embedding_vectors.shape)
-        self.embeddings.weight = nn.Parameter(torch.from_numpy(embedding_vectors))
+        # self.embeddings = nn.Embedding(*embedding_vectors.shape)
+        # self.embeddings.weight = nn.Parameter(torch.from_numpy(embedding_vectors))
+        embedding_len = len(embedding_vectors[list(embedding_vectors.keys())[0]])
+        self.embeddings = self._init_embedding(vocab.vocab, embedding_len, embedding_vectors)
         self.bidirectional = bidirectional
-        self.gru = nn.GRU(embedding_vectors.shape[1], hidden_size, dropout=dropout, bidirectional=bidirectional)
+        self.gru = nn.GRU(embedding_len, hidden_size, dropout=dropout, bidirectional=bidirectional)
+
+    def _init_embedding(self, vocab: list, em_sz: int, emb_vecs: dict = None):
+        emb = nn.Embedding(len(vocab), em_sz, padding_idx=1)
+        if emb_vecs is not None:
+            wgts = emb.weight.data
+            miss = []
+            for i, w in enumerate(vocab.keys()):
+                try:
+                    wgts[i] = torch.from_numpy(emb_vecs[w])
+                except:
+                    miss.append(w)
+            print(f'Encoder embedding vector didnt have {len(miss)} tokens, example {miss[5:10]}')
+        return emb
 
     # input should be a packed sequence                                                    
     def forward(self, packed_input):
@@ -70,13 +83,13 @@ class TransformerEncoder(nn.Module):
 
 class QuickThoughts(nn.Module):
 
-    def __init__(self, wv_model, hidden_size=1000, encoder='uni-gru', cuda=False):
+    def __init__(self, wv_model, vocab, hidden_size=1000, encoder='uni-gru', cuda=False):
         super(QuickThoughts, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         # self.enc_f = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
         # self.enc_g = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
-        self.enc_f = GRUEncoder(wv_model, hidden_size, False, 0.3, cuda=cuda)
-        self.enc_g = GRUEncoder(wv_model, hidden_size, False, 0.3, cuda=cuda)
+        self.enc_f = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, cuda=cuda)
+        self.enc_g = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, cuda=cuda)
         log_param_info(self)
 
     # generate targets softmax

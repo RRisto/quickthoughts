@@ -145,7 +145,7 @@ class QTLearner:
         # model, optimizer, and loss function
         # qt = QuickThoughts(WV_MODEL, self.hidden_size)
         # qt = QuickThoughts(WV_MODEL.wv.vectors, self.hidden_size)
-        qt = QuickThoughts(pretrained_embeddings, self.hidden_size)
+        qt = QuickThoughts(pretrained_embeddings, vocab, self.hidden_size)
         if torch.cuda.is_available():
             qt = qt.cuda()
 
