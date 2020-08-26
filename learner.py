@@ -61,7 +61,7 @@ class QTLearner:
         _LOGGER.info(pformat(self.gather_conf_info()))
         _LOGGER.info(f"Wrote config to file: {self.config_filepath}")
 
-    def create_dataset(self, wv_vocab):
+    def create_dataset(self):
         bookcorpus = BookCorpus(self.data_path)
         train_iter = DataLoader(bookcorpus,
                                 batch_size=self.batch_size,
@@ -137,7 +137,7 @@ class QTLearner:
 
         plotter = VisdomLinePlotter()
         WV_MODEL = load_wordvectors_model(self.embedding)
-        train_iter, corpus = self.create_dataset(get_wordvectors_vocab(WV_MODEL))
+        train_iter, corpus = self.create_dataset()
 
         vocab = corpus.vocab
         pretrained_embeddings = get_pretrained_embeddings(WV_MODEL, vocab, WV_MODEL.vector_size)
