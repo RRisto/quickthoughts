@@ -13,8 +13,6 @@ class GRUEncoder(nn.Module):
         super(GRUEncoder, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         self.hidden_size = hidden_size
-        # self.embeddings = nn.Embedding(*embedding_vectors.shape)
-        # self.embeddings.weight = nn.Parameter(torch.from_numpy(embedding_vectors))
         embedding_len = len(embedding_vectors[list(embedding_vectors.keys())[0]])
         self.embeddings = self._init_embedding(vocab, embedding_len, embedding_vectors)
         self.bidirectional = bidirectional
