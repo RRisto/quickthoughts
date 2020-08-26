@@ -10,8 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class BookCorpus(Dataset):
 
-    def __init__(self, file_path, vocab, max_vocab=50000, min_freq=1):
-        # self.vocab = vocab
+    def __init__(self, file_path, max_vocab=50000, min_freq=1):
         self.max_vocab = max_vocab
         self.min_freq = min_freq
         with open(file_path) as f:

@@ -6,9 +6,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data.dataloader import DataLoader
 from src.data.bookcorpus import BookCorpus
+from src.data.utils import get_pretrained_embeddings
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
-from src.data.vocab import Vocab
 from pprint import pformat
 from tqdm import tqdm
 from gensim.models import KeyedVectors
@@ -62,7 +62,7 @@ class QTLearner:
         _LOGGER.info(f"Wrote config to file: {self.config_filepath}")
 
     def create_dataset(self, wv_vocab):
-        bookcorpus = BookCorpus(self.data_path, wv_vocab)
+        bookcorpus = BookCorpus(self.data_path)
         train_iter = DataLoader(bookcorpus,
                                 batch_size=self.batch_size,
                                 num_workers=1,
@@ -122,7 +122,7 @@ class QTLearner:
                     qt.eval()
                     # for dataset in ['MR', 'CR', 'MPQA', 'SUBJ']:
                     for dataset in ['MR']:
-                        acc = test_performance(qt, vocab.vocab, dataset, 'data', seed=int(time.time()))
+                        acc = test_performance(qt, vocab, dataset, 'data', seed=int(time.time()))
                         plotter.plot('acc', dataset, 'Downstream Accuracy', i, acc, xlabel='seconds')
                     qt.train()
 
@@ -139,12 +139,10 @@ class QTLearner:
         WV_MODEL = load_wordvectors_model(self.embedding)
         train_iter, corpus = self.create_dataset(get_wordvectors_vocab(WV_MODEL))
 
-        vocab = Vocab(corpus.vocab)
-        pretrained_embeddings = vocab.get_pretrained_embeddings(WV_MODEL, WV_MODEL.vector_size)
+        vocab = corpus.vocab
+        pretrained_embeddings = get_pretrained_embeddings(WV_MODEL, vocab, WV_MODEL.vector_size)
 
         # model, optimizer, and loss function
-        # qt = QuickThoughts(WV_MODEL, self.hidden_size)
-        # qt = QuickThoughts(WV_MODEL.wv.vectors, self.hidden_size)
         qt = QuickThoughts(pretrained_embeddings, vocab, self.hidden_size)
         if torch.cuda.is_available():
             qt = qt.cuda()

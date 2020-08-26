@@ -16,7 +16,7 @@ class GRUEncoder(nn.Module):
         # self.embeddings = nn.Embedding(*embedding_vectors.shape)
         # self.embeddings.weight = nn.Parameter(torch.from_numpy(embedding_vectors))
         embedding_len = len(embedding_vectors[list(embedding_vectors.keys())[0]])
-        self.embeddings = self._init_embedding(vocab.vocab, embedding_len, embedding_vectors)
+        self.embeddings = self._init_embedding(vocab, embedding_len, embedding_vectors)
         self.bidirectional = bidirectional
         self.gru = nn.GRU(embedding_len, hidden_size, dropout=dropout, bidirectional=bidirectional)
 
