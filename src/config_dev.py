@@ -15,6 +15,7 @@ CONFIG = {
     'test_batch_size': 1000,
     'norm_threshold': 5.0,
     'hidden_size': 1000,
+    'padding_value': 0,
     'num_epochs': 10,
     'lr': 5e-4,
     'vocab_size': 10000,

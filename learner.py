@@ -28,7 +28,8 @@ def load_wordvectors_model(path_to_model):
 
 
 class QTLearner:
-    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
+    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, padding_value, lr, resume,
+                 num_epochs,
                  norm_threshold, config_file_name='config.json'):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
@@ -36,6 +37,7 @@ class QTLearner:
         self.data_path = data_path
         self.batch_size = batch_size
         self.hidden_size = hidden_size
+        self.padding_value = padding_value
         self.lr = lr
         self.resume = resume
         self.num_epochs = num_epochs
@@ -143,7 +145,7 @@ class QTLearner:
         pretrained_embeddings = get_pretrained_embeddings(WV_MODEL, vocab, WV_MODEL.vector_size)
 
         # model, optimizer, and loss function
-        qt = QuickThoughts(pretrained_embeddings, vocab, self.hidden_size)
+        qt = QuickThoughts(pretrained_embeddings, vocab, self.hidden_size, self.padding_value)
         if torch.cuda.is_available():
             qt = qt.cuda()
 

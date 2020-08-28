@@ -9,7 +9,7 @@ import numpy as np
 
 
 class GRUEncoder(nn.Module):
-    def __init__(self, embedding_vectors, vocab, hidden_size, bidirectional, dropout, cuda=False):
+    def __init__(self, embedding_vectors, vocab, hidden_size, bidirectional, dropout, padding_value, cuda=False):
         super(GRUEncoder, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         self.hidden_size = hidden_size
@@ -17,6 +17,7 @@ class GRUEncoder(nn.Module):
         self.embeddings = self._init_embedding(vocab, embedding_len, embedding_vectors)
         self.bidirectional = bidirectional
         self.gru = nn.GRU(embedding_len, hidden_size, dropout=dropout, bidirectional=bidirectional)
+        self.padding_value=padding_value
 
     def _init_embedding(self, vocab: list, em_sz: int, emb_vecs: dict = None):
         emb = nn.Embedding(len(vocab), em_sz, padding_idx=1)
@@ -34,7 +35,7 @@ class GRUEncoder(nn.Module):
     # input should be a packed sequence                                                    
     def forward(self, packed_input):
         # unpack to get the info we need
-        raw_inputs, lengths = pad_packed_sequence(packed_input)
+        raw_inputs, lengths = pad_packed_sequence(packed_input, padding_value=self.padding_value)
         max_seq_len = torch.max(lengths)
         embeds = self.embeddings(raw_inputs)
         hidden = torch.zeros(2 if self.bidirectional else 1, embeds.shape[1], self.hidden_size, device=self.device)
@@ -81,13 +82,13 @@ class TransformerEncoder(nn.Module):
 
 class QuickThoughts(nn.Module):
 
-    def __init__(self, wv_model, vocab, hidden_size=1000, encoder='uni-gru', cuda=False):
+    def __init__(self, wv_model, vocab, hidden_size=1000, padding_value=0, encoder='uni-gru', cuda=False):
         super(QuickThoughts, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         # self.enc_f = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
         # self.enc_g = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
-        self.enc_f = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, cuda=cuda)
-        self.enc_g = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, cuda=cuda)
+        self.enc_f = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, padding_value, cuda=cuda)
+        self.enc_g = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, padding_value, cuda=cuda)
         log_param_info(self)
 
     # generate targets softmax
