@@ -19,5 +19,6 @@ CONFIG = {
     'num_epochs': 10,
     'lr': 5e-4,
     'vocab_size': 10000,
-    'embedding': 'embedding_models/telia_w2v.bin'
+    # 'embedding': 'embedding_models/telia_w2v.bin'
+    'embedding': 'embedding_models/sample_w2v.bin'
 }

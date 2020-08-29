@@ -115,11 +115,11 @@ class QTLearner:
 
                 temp.set_description("loss {:.4f} | failed/skipped {:3d}".format(loss, failed_or_skipped_batches))
 
-                if i % 5 == 0:
+                if i % 1 == 0:
                     plotter.plot('loss', 'train', 'Run: {} Loss'.format(str(self.checkpoint_dir).split('/')[-1]), i,
                                  loss.item())
                 # todo refactor into separate function
-                if i % 5 == 0:
+                if i % 1 == 0:
                     checkpoint_training(self.checkpoint_dir, i, qt, optimizer)
                     qt.eval()
                     # for dataset in ['MR', 'CR', 'MPQA', 'SUBJ']:

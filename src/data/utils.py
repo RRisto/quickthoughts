@@ -11,6 +11,7 @@ UNK_TOKEN_IND = 1
 def prepare_sequence(text, vocab, max_len=50, unk_token=UNK_TOKEN, no_zeros=False):
     pruned_sequence = zip(filter(lambda x: x in vocab, tokenize(text)), range(max_len))
     seq = [vocab.get(x, unk_token) for (x, _) in pruned_sequence]
+    # seq = [vocab[x] for (x, _) in pruned_sequence]
     if len(seq) == 0 and no_zeros:
         return [1]
     return seq
