@@ -118,15 +118,6 @@ class QTLearner:
                 if i % 1 == 0:
                     plotter.plot('loss', 'train', 'Run: {} Loss'.format(str(self.checkpoint_dir).split('/')[-1]), i,
                                  loss.item())
-                # # todo refactor into separate function
-                # if i % 1 == 0:
-                #     checkpoint_training(self.checkpoint_dir, i, qt, optimizer)
-                #     qt.eval()
-                #     # for dataset in ['MR', 'CR', 'MPQA', 'SUBJ']:
-                #     for dataset in ['MR']:
-                #         acc = test_performance(qt, vocab, dataset, 'data', seed=int(time.time()))
-                #         plotter.plot('acc', dataset, 'Downstream Accuracy', i, acc, xlabel='seconds')
-                #     qt.train()
 
             except Exception as e:
                 _LOGGER.exception(e)
@@ -170,7 +161,7 @@ class QTLearner:
 
         for j in range(self.num_epochs):
             self.fit_epoch(train_iter, failed_or_skipped_batches, optimizer, qt, kl_loss, plotter, vocab)
-            self.eval(j,qt, optimizer, vocab, plotter)
+            self.eval(j, qt, optimizer, vocab, plotter)
 
     def check_conf(self):
         pass
