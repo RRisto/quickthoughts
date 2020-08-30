@@ -136,6 +136,7 @@ def eval_nested_kfold(encoder, vocab, name, loc='../data', k=10, seed=1234):
 
 def test_performance(encoder, vocab, name, loc, seed=1234):
     text, labels, features = load_data(encoder, vocab, name, loc=loc, seed=seed)
+    print(f'testing features first {features[0][:5]}')
     X_train, X_test, y_train, y_test = train_test_split(features, labels)
     acc_t = fit_clf(X_train, y_train, X_test, y_test, 1)
     _LOGGER.info("Trained on {:4d} examples - Test Accuracy: {:.2%}".format(len(X_train), acc_t))
