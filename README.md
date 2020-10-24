@@ -5,6 +5,9 @@ This is a very rough implementation atm, so feel free to reach out if you're hav
 
 There's also a lot of code for some experiments I ran [here](https://jcaip.github.io/Quickthoughts/) in this repo.
 
+## Changes
+
+I've refactored original code a bit. Made Learner class for simpler model creation.
 ### Setup
 
 First you'll need to pull down the bookcorpus submodule and follow the instructions there to get `all.txt`.
