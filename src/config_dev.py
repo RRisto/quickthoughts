@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-__base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
+__base_dir = os.getenv('DIR', 'C:/Users/risto/projects/quickthoughts_refactored')
 
 CONFIG = {
     'base_dir': __base_dir,
@@ -15,10 +15,9 @@ CONFIG = {
     'test_batch_size': 1000,
     'norm_threshold': 5.0,
     'hidden_size': 1000,
-    'padding_value': 0,
     'num_epochs': 50,
     'lr': 5e-4,
     'vocab_size': 10000,
     # 'embedding': 'embedding_models/telia_w2v.bin'
-    'embedding': 'embedding_models/sample_w2v.bin'
+    'embedding': 'glove-wiki-gigaword-300'
 }

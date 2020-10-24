@@ -1,57 +1,40 @@
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from src.transformer_model import PositionalEncoding, PositionwiseFeedForward, MultiHeadedAttention, Encoder, \
-    EncoderLayer
-from src.utils import log_param_info
+from .transformer_model import PositionalEncoding, PositionwiseFeedForward, MultiHeadedAttention, Encoder, EncoderLayer
+from .utils import log_param_info
 from scipy.linalg import block_diag
 import numpy as np
 
-
 class GRUEncoder(nn.Module):
-    def __init__(self, embedding_vectors, vocab, hidden_size, bidirectional, dropout, padding_value, cuda=False):
+    def __init__(self, wv_model, hidden_size, bidirectional, dropout,  cuda=False):
         super(GRUEncoder, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         self.hidden_size = hidden_size
-        embedding_len = len(embedding_vectors[list(embedding_vectors.keys())[0]])
-        self.embeddings = self._init_embedding(vocab, embedding_len, embedding_vectors)
+        self.embeddings = nn.Embedding(*wv_model.vectors.shape)
+        self.embeddings.weight = nn.Parameter(torch.from_numpy(wv_model.vectors))
         self.bidirectional = bidirectional
-        self.gru = nn.GRU(embedding_len, hidden_size, dropout=dropout, bidirectional=bidirectional)
-        self.padding_value=padding_value
-
-    def _init_embedding(self, vocab: list, em_sz: int, emb_vecs: dict = None):
-        emb = nn.Embedding(len(vocab), em_sz, padding_idx=1)
-        if emb_vecs is not None:
-            wgts = emb.weight.data
-            miss = []
-            for i, w in enumerate(vocab.keys()):
-                try:
-                    wgts[i] = torch.from_numpy(emb_vecs[w])
-                except:
-                    miss.append(w)
-            print(f'Encoder embedding vector didnt have {len(miss)} tokens, example {miss[5:10]}')
-        return emb
+        self.gru = nn.GRU(wv_model.vectors.shape[1], hidden_size, dropout=dropout, bidirectional=bidirectional)
 
     # input should be a packed sequence                                                    
     def forward(self, packed_input):
-        # unpack to get the info we need
-        raw_inputs, lengths = pad_packed_sequence(packed_input, padding_value=self.padding_value)
+        #unpack to get the info we need
+        raw_inputs, lengths = pad_packed_sequence(packed_input)
         max_seq_len = torch.max(lengths)
         embeds = self.embeddings(raw_inputs)
-        hidden = torch.zeros(2 if self.bidirectional else 1, embeds.shape[1], self.hidden_size, device=self.device)
+        hidden = torch.zeros(2 if self.bidirectional else 1, embeds.shape[1], self.hidden_size, device = self.device)
         packed = pack_padded_sequence(embeds, lengths, enforce_sorted=False)
-        packed_output, hidden = self.gru(packed.float(), hidden)
+        packed_output, hidden = self.gru(packed, hidden)
         unpacked, _ = pad_packed_sequence(packed_output)
         idx = (lengths - 1).view(-1, 1).expand(unpacked.size(1),
                                                unpacked.size(2)).unsqueeze(0).to(self.device)
-        return unpacked.gather(0, idx).squeeze(0)
+        return unpacked.gather(0, idx).squeeze()
 
 
 class TransformerEncoder(nn.Module):
     """
     Attention based sentence encoder
     """
-
     def __init__(self, wv_model, hidden_size, cuda=False, N=6, d_model=300, d_ff=1000, h=5, dropout=0.1):
         super(TransformerEncoder, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
@@ -63,6 +46,7 @@ class TransformerEncoder(nn.Module):
         self.ff = PositionwiseFeedForward(d_model, d_ff, dropout)
         self.encoder = Encoder(EncoderLayer(d_model, self.attn, self.ff, dropout), N)
 
+        
     def forward(self, packed_input, pad=0):
         padded_input, lengths = pad_packed_sequence(packed_input, batch_first=True)
         # print("padded input:", padded_input.size())
@@ -79,25 +63,25 @@ class TransformerEncoder(nn.Module):
         # print("output:", output.size())
         return output
 
-
 class QuickThoughts(nn.Module):
 
-    def __init__(self, wv_model, vocab, hidden_size=1000, padding_value=0, encoder='uni-gru', cuda=False):
+    def __init__(self, wv_model, hidden_size=1000, encoder='uni-gru', cuda=False):
         super(QuickThoughts, self).__init__()
         self.device = torch.device('cuda' if cuda else 'cpu')
         # self.enc_f = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
         # self.enc_g = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
-        self.enc_f = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, padding_value, cuda=cuda)
-        self.enc_g = GRUEncoder(wv_model, vocab, hidden_size, False, 0.3, padding_value, cuda=cuda)
+        self.enc_f = GRUEncoder(wv_model, hidden_size, False, 0.3,  cuda=cuda)
+        self.enc_g = GRUEncoder(wv_model, hidden_size, False, 0.3, cuda=cuda)
         log_param_info(self)
 
     # generate targets softmax
     def generate_targets(self, num_samples, offsetlist=[1], label_smoothing=0.1):
         targets = torch.zeros(num_samples, num_samples, device=self.device).fill_(label_smoothing)
         for offset in offsetlist:
-            targets += torch.diag(torch.ones(num_samples - abs(offset), device=self.device), diagonal=offset)
+            targets += torch.diag(torch.ones(num_samples-abs(offset), device=self.device), diagonal=offset)
         targets /= targets.sum(1, keepdim=True)
         return targets
+
 
     # generate batched targets
     def generate_block_targets(self, positive_block_size, num_blocks):
@@ -110,17 +94,18 @@ class QuickThoughts(nn.Module):
     def generate_smooth_targets(self, num_samples):
         targets = torch.zeros(num_samples, num_samples, device=self.device)
         for offset, scale in zip([-3, -2, -1, 1, 2, 3], [1, 1, 10, 10, 1, 1]):
-            targets += scale * torch.diag(torch.ones(num_samples - abs(offset), device=self.device), diagonal=offset)
+            targets += scale*torch.diag(torch.ones(num_samples-abs(offset), device=self.device), diagonal=offset)
         targets /= targets.sum(1, keepdim=True)
         return targets
 
-    # expects a packed sequence
+    #expects a packed sequence
     def forward(self, inputs, catdim=1):
         encoding_f = self.enc_f(inputs)
         encoding_g = self.enc_g(inputs)
-
-        # testing
+        
+        #testing
         if not self.training:
             return torch.cat((encoding_f, encoding_g), dim=catdim)
 
         return (encoding_f, encoding_g)
+

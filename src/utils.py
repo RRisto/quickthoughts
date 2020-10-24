@@ -3,6 +3,7 @@ import torch
 from visdom import Visdom
 from torch.nn.utils.rnn import pack_sequence
 import numpy as np
+import gensim.downloader as api
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -15,6 +16,11 @@ _LOGGER = logging.getLogger(__name__)
 def safe_pack_sequence(x):
     try:
         packed_batch = pack_sequence(x, enforce_sorted=False)
+        # targets = torch.zeros(len(x), len(x))
+        # for i, t1 in enumerate(x):
+        # for j in range(i+1, len(x)):
+        # targets[i, j] = len(np.setdiff1d(t1.numpy(),x[j].numpy()))
+        # targets += targets.t()
 
         return packed_batch
 
@@ -69,3 +75,10 @@ class VisdomLinePlotter(object):
         else:
             self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name,
                           update='append')
+
+def load_pretrained_embeddings(file_path):
+    #function to return pretrained embeddings, embeddings should have:
+    # embeddings.vocab - dict {word: id}
+    # embeddings.vectors - np array of pretrianed wordvectors, position in array is word id in vocab
+    WV_MODEL = api.load(file_path)
+    return WV_MODEL
