@@ -21,8 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume,
-                 num_epochs,
-                 norm_threshold, config_file_name='config.json'):
+                 num_epochs, norm_threshold, config_file_name='config.json'):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.embedding = embedding
