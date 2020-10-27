@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-__base_dir = os.getenv('DIR', 'C:/Users/risto/projects/quickthoughts_refactored')
+__base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
 
 CONFIG = {
     'base_dir': __base_dir,
