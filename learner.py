@@ -22,9 +22,11 @@ _LOGGER = logging.getLogger(__name__)
 
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-                 norm_threshold, config_file_name='config.json', optimiser_class=optim.Adam):
+                 norm_threshold, config_file_name='config.json', optimiser_class=optim.Adam,
+                 metrics_filename='metrics.txt'):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
+        self.metrics_filename = metrics_filename
         self.embedding = embedding
         self.data_path = data_path
         self.batch_size = batch_size
@@ -94,8 +96,7 @@ class QTLearner:
         loss_train, failed_or_skipped_batches_train = self.fit_epoch(train_data_iter, failed_or_skipped_batches,
                                                                      optimizer, qt, mode='train')
         failed_or_skipped_batches += failed_or_skipped_batches_train
-        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, optimizer, qt,
-                                      mode='eval')
+        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, optimizer, qt, mode='eval')
 
         return loss_train, loss_eval, failed_or_skipped_batches
 
@@ -190,6 +191,16 @@ class QTLearner:
             for i, acc in enumerate(downstream_accs):
                 plotter.plot('acc', f'accuracy {downstream_datasets[i]}', 'Downstream accuracy', j, downstream_accs[i],
                              xlabel='epoch')
+            self.save_metrics(j, loss_train, loss_eval, downstream_accs, downstream_datasets)
+
+    def save_metrics(self, epoch, loss_train, loss_eval, donwstream_accs, downstream_datasets):
+        metrics_file = self.checkpoint_dir / self.metrics_filename
+        row = f'epoch: {epoch}, loss_train: {loss_train}, loss_eval: {loss_eval}, downstream accuracy '
+        for i, dataset in enumerate(downstream_datasets):
+            row += f'{dataset}: {donwstream_accs[i]},'
+        row += '\n'
+        with open(metrics_file, 'a') as f:
+            f.write(row)
 
     def predict(self, text):
         pass
