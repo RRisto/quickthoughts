@@ -1,7 +1,6 @@
 import logging
+import shutil
 import time
-import json
-from ast import literal_eval
 
 import torch
 from pathlib import Path
@@ -15,15 +14,15 @@ import torch.optim as optim
 from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
-from src.data.corpus import Corpus, create_train_eval_corpus
+from src.data.corpus import create_train_eval_corpus
 from src.eval import test_performance
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class QTLearner:
-    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume,
-                 num_epochs, norm_threshold, config_file_name='config.json', optimiser_func=optim.Adam):
+    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
+                 norm_threshold, config_file_name='config.json', optimiser_class=optim.Adam):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.embedding = embedding
@@ -34,13 +33,12 @@ class QTLearner:
         self.resume = resume
         self.num_epochs = num_epochs
         self.norm_threshold = norm_threshold
-        self.optimizer_func = optimiser_func
+        self.optimizer_class = optimiser_class
         self.WV_MODEL = load_pretrained_embeddings(self.embedding)
         self.vocab = self.WV_MODEL.vocab
         # model, optimizer, and loss function
         self.qt = QuickThoughts(self.WV_MODEL, self.hidden_size)  # .cuda()
-        # optimizer = optim.Adam(filter(lambda p: p.requires_grad, qt.parameters()), lr=self.lr)
-        self.optimizer = self.optimizer_func(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
+        self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
 
     def gather_conf_info(self):
         return {'checkpoint_dir': str(self.checkpoint_dir),
@@ -51,16 +49,12 @@ class QTLearner:
                 'lr': self.lr,
                 'resume': self.resume,
                 'num_epochs': self.num_epochs,
-                'norm_threshold': self.norm_threshold
+                'norm_threshold': self.norm_threshold,
+                'optimizer_class': self.optimizer_class
                 }
 
     def _init_logging(self):
-        # setting up training
-        self.checkpoint_dir.mkdir(exist_ok=True)
-        self.config_filepath = self.checkpoint_dir / self.config_file_name
-        self.config_filepath.write_text(str(self.gather_conf_info()))
         _LOGGER.info(pformat(self.gather_conf_info()))
-        _LOGGER.info(f"Wrote config to file: {self.config_filepath}")
 
     def forward_pass(self, qt, data, mode='train'):
         # forward pass
@@ -96,16 +90,16 @@ class QTLearner:
             optimizer.step()
         return loss
 
-    def fit_eval_epoch(self, train_data_iter, eval_data_iter, qt, optimizer, failed_or_skipped_batches, plotter):
+    def fit_eval_epoch(self, train_data_iter, eval_data_iter, qt, optimizer, failed_or_skipped_batches):
         loss_train, failed_or_skipped_batches_train = self.fit_epoch(train_data_iter, failed_or_skipped_batches,
-                                                                     optimizer, qt, plotter, mode='train')
+                                                                     optimizer, qt, mode='train')
         failed_or_skipped_batches += failed_or_skipped_batches_train
-        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, optimizer, qt, plotter,
+        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, optimizer, qt,
                                       mode='eval')
 
         return loss_train, loss_eval, failed_or_skipped_batches
 
-    def fit_epoch(self, data_iter, failed_or_skipped_batches, optimizer, qt, plotter, mode='train'):
+    def fit_epoch(self, data_iter, failed_or_skipped_batches, optimizer, qt, mode='train'):
         if mode == 'train':
             qt.train()
         else:
@@ -146,12 +140,9 @@ class QTLearner:
             acc = test_performance(qt, vocab, dataset, 'data', seed=int(time.time()))
             accs.append(acc)
         return accs
-        #     plotter.plot('acc', dataset, 'Downstream Accuracy', i, acc, xlabel='seconds')
-        # qt.train()
 
     def create_dataloaders(self, eval_p=0.2):
-        bookcorpus_train, bookcorpus_eval = create_train_eval_corpus(self.data_path, self.vocab,
-                                                                     eval_p)
+        bookcorpus_train, bookcorpus_eval = create_train_eval_corpus(self.data_path, self.vocab, eval_p)
         train_iter = DataLoader(bookcorpus_train,
                                 batch_size=self.batch_size,
                                 num_workers=1,
@@ -171,8 +162,6 @@ class QTLearner:
         self._init_logging()
 
         plotter = VisdomLinePlotter()
-        # load in word vectors
-        # WV_MODEL = load_pretrained_embeddings(self.embedding)
 
         # create datasets
         train_iter, eval_iter = self.create_dataloaders()
@@ -189,7 +178,7 @@ class QTLearner:
         for j in range(self.num_epochs):
             loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(train_iter, eval_iter, self.qt,
                                                                                    self.optimizer,
-                                                                                   failed_or_skipped_batches, plotter)
+                                                                                   failed_or_skipped_batches)
             downstream_datasets = ['MR']
             downstream_accs = self.eval_downstream(self.qt, self.vocab, datasets=downstream_datasets)
             if best_eval_loss is None or best_eval_loss > loss_eval:
@@ -202,9 +191,6 @@ class QTLearner:
                 plotter.plot('acc', f'accuracy {downstream_datasets[i]}', 'Downstream accuracy', j, downstream_accs[i],
                              xlabel='epoch')
 
-            # self.fit_epoch(train_iter, failed_or_skipped_batches, optimizer, qt, plotter)
-            # self.eval(eval_iter, j, qt, optimizer, WV_MODEL.vocab, plotter)
-
     def predict(self, text):
         pass
 
@@ -212,19 +198,26 @@ class QTLearner:
         pass
 
     @classmethod
-    def create(cls, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-               norm_threshold):
-        return cls(checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-                   norm_threshold)
+    def create_from_conf(cls, config_path):
+        import importlib.machinery
+        CONFIG = importlib.machinery.SourceFileLoader('CONFIG', config_path).load_module().CONFIG
+        checkpoint_dir = Path(CONFIG['checkpoint_dir'])
+        checkpoint_dir.mkdir()
+        shutil.copyfile(config_path, checkpoint_dir / 'config.py')
+        return cls(CONFIG['checkpoint_dir'], CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],
+                   CONFIG['hidden_size'], CONFIG['lr'], CONFIG['resume'], CONFIG['num_epochs'],
+                   CONFIG['norm_threshold'], CONFIG['optimiser_class'])
 
     @classmethod
     def create_from_checkpoint(cls, checkpoint_dir, checkpoint_file_name='checkpoint_latest.pth',
-                               config_file_name='config.json'):
+                               config_file_name='config.py'):
+        import importlib.machinery
         checkpoint_dir = Path(checkpoint_dir)
-        conf = literal_eval((checkpoint_dir / config_file_name).read_text())
-        # todo optimizer to be customizable
-        learner = cls(checkpoint_dir, conf['embedding'], conf['data_path'], conf['batch_size'], conf['hidden_size'],
-                      conf['lr'], conf['resume'], conf['num_epochs'], conf['norm_threshold'])
+        config_path = checkpoint_dir / config_file_name
+        CONFIG = importlib.machinery.SourceFileLoader('CONFIG', str(config_path)).load_module().CONFIG
+        learner = cls(checkpoint_dir, CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],
+                      CONFIG['hidden_size'], CONFIG['lr'], CONFIG['resume'], CONFIG['num_epochs'],
+                      CONFIG['norm_threshold'], optimiser_class=CONFIG['optimiser_class'])
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
         learner.qt.load_state_dict(checkpoint_states['state_dict'])

@@ -1,13 +1,15 @@
 import os
 from datetime import datetime
 
+from torch import optim
+
 __base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
 
 CONFIG = {
     'base_dir': __base_dir,
     'vec_path': '{}/data/GoogleNews-vectors-negative300.bin'.format(__base_dir),
     'data_path': '{}/data/cleaned.txt'.format(__base_dir),
-    'checkpoint_dir': '{}/checkpoints/{:%m-%d-%H-%M-%S}'.format(__base_dir, datetime.now()),
+    'checkpoint_dir': 'checkpoints/dev',
     'resume': False,
     'context_size': 1,
     # 'batch_size': 400,
@@ -19,5 +21,6 @@ CONFIG = {
     'lr': 5e-4,
     'vocab_size': 10000,
     # 'embedding': 'embedding_models/telia_w2v.bin'
-    'embedding': 'glove-wiki-gigaword-300'
+    'embedding': 'glove-wiki-gigaword-300',
+    'optimiser_class': optim.Adam
 }
