@@ -14,7 +14,7 @@ import torch.optim as optim
 from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
-from src.data.corpus import create_train_eval_corpus
+from src.data.corpus import create_train_eval_corpus, Corpus
 from src.eval import test_performance
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class QTLearner:
         # model, optimizer, and loss function
         self.qt = QuickThoughts(self.WV_MODEL, self.hidden_size)  # .cuda()
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
+        self.kl_loss = nn.KLDivLoss(reduction='batchmean')
 
     def gather_conf_info(self):
         return {'checkpoint_dir': str(self.checkpoint_dir),
@@ -58,12 +59,14 @@ class QTLearner:
     def _init_logging(self):
         _LOGGER.info(pformat(self.gather_conf_info()))
 
-    def forward_pass(self, qt, data, mode='train'):
+    def forward_pass(self, qt, data, mode='train', return_only_embedding=False):
         # forward pass
         if mode == 'train':
             enc_f, enc_g = qt(data)
         else:  # in eval mode returns concatenated enc_f and enc_g
             enc = qt(data)
+            if return_only_embedding:
+                return enc
             enc_f, enc_g = enc[:, :self.hidden_size], enc[:, self.hidden_size:]
 
         # calculate scores
@@ -81,16 +84,16 @@ class QTLearner:
         # targets also topelitz matrix
         targets = qt.generate_targets(self.batch_size, offsetlist=[1])
         loss = self.kl_loss(block_log_scores, targets)
-        return loss
+        return loss, block_log_scores
 
-    def fit_batch(self, qt, data, optimizer, mode='train'):
-        loss = self.forward_pass(qt, data, mode)
+    def fit_batch(self, qt, data, optimizer=None, mode='train'):
+        loss, block_log_scores = self.forward_pass(qt, data, mode)
         if mode == 'train':
             loss.backward()
             # grad clipping
             nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, qt.parameters()), self.norm_threshold)
             optimizer.step()
-        return loss
+        return loss, block_log_scores
 
     def fit_eval_epoch(self, train_data_iter, eval_data_iter, qt, optimizer, failed_or_skipped_batches):
         loss_train, failed_or_skipped_batches_train = self.fit_epoch(train_data_iter, failed_or_skipped_batches,
@@ -122,7 +125,7 @@ class QTLearner:
                 if torch.cuda.is_available():
                     data = data.cuda()
 
-                loss = self.fit_batch(qt, data, optimizer, mode)
+                loss, _ = self.fit_batch(qt, data, optimizer, mode)
 
                 data_iter_tq.set_description(
                     "loss {} {:.4f} | failed/skipped {:3d}".format(mode, loss, failed_or_skipped_batches))
@@ -167,8 +170,6 @@ class QTLearner:
         # create datasets
         train_iter, eval_iter = self.create_dataloaders()
 
-        self.kl_loss = nn.KLDivLoss(reduction='batchmean')
-
         # start training
         self.qt = self.qt.train()
         failed_or_skipped_batches = 0
@@ -202,11 +203,23 @@ class QTLearner:
         with open(metrics_file, 'a') as f:
             f.write(row)
 
-    def predict(self, text):
-        pass
-
-    def check_conf(self):
-        pass
+    def predict(self, texts, batch_size=64):
+        self.qt.eval()
+        eval_corpus = Corpus(texts, self.vocab)
+        if len(eval_corpus) < batch_size:
+            batch_size = len(eval_corpus)
+        eval_iter = DataLoader(eval_corpus,
+                               batch_size=batch_size,
+                               num_workers=1,
+                               drop_last=True,
+                               pin_memory=True,  # send to GPU
+                               collate_fn=safe_pack_sequence)
+        eval_iter_tq = tqdm(eval_iter)
+        predictions = []
+        for batch_data in eval_iter_tq:
+            prediction = self.forward_pass(self.qt, batch_data, mode='eval', return_only_embedding=True)
+            predictions.extend(prediction.detach().numpy())
+        return predictions
 
     @classmethod
     def create_from_conf(cls, config_path):
