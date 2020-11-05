@@ -10,12 +10,13 @@ from torch.utils.data.dataloader import DataLoader
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import numpy as np
 
 from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
 from src.data.corpus import create_train_eval_corpus, Corpus
-from src.eval import test_performance
+from src.eval import test_performance, test_performances
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class QTLearner:
         self.qt = QuickThoughts(self.WV_MODEL, self.hidden_size)  # .cuda()
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
+        self.test_downstream_task_func = test_performances
 
     def gather_conf_info(self):
         return {'checkpoint_dir': str(self.checkpoint_dir),
@@ -66,7 +68,7 @@ class QTLearner:
         else:  # in eval mode returns concatenated enc_f and enc_g
             enc = qt(data)
             if return_only_embedding:
-                return enc
+                return enc.detach().numpy()
             enc_f, enc_g = enc[:, :self.hidden_size], enc[:, self.hidden_size:]
 
         # calculate scores
@@ -137,12 +139,14 @@ class QTLearner:
                     torch.cuda.empty_cache()
         return loss, failed_or_skipped_batches
 
-    def eval_downstream(self, qt, vocab, datasets=['MR']):
+    def eval_downstream(self, qt, vocab, loc='data', datasets=['MR']):
+        # todo make params default to conf
         qt.eval()
-        accs = []
-        for dataset in datasets:
-            acc = test_performance(qt, vocab, dataset, 'data', seed=int(time.time()))
-            accs.append(acc)
+        accs = self.test_downstream_task_func(self.predict, datasets=datasets, loc=loc)
+        # accs = []
+        # for dataset in datasets:
+        #   acc = test_performance(qt, vocab, dataset, 'data', seed=int(time.time()))
+        #  accs.append(acc)
         return accs
 
     def create_dataloaders(self, eval_p=0.2):
@@ -189,9 +193,8 @@ class QTLearner:
 
             plotter.plot('loss', 'train', 'Loss train', j, loss_train.item(), xlabel='epoch')
             plotter.plot('loss', 'eval', 'Loss eval', j, loss_eval.item(), xlabel='epoch')
-            for i, acc in enumerate(downstream_accs):
-                plotter.plot('acc', f'accuracy {downstream_datasets[i]}', 'Downstream accuracy', j, downstream_accs[i],
-                             xlabel='epoch')
+            for acc in downstream_accs:
+                plotter.plot('acc', f'accuracy {acc[1]}', 'Downstream accuracy', j, acc[0], xlabel='epoch')
             self.save_metrics(j, loss_train, loss_eval, downstream_accs, downstream_datasets)
 
     def save_metrics(self, epoch, loss_train, loss_eval, donwstream_accs, downstream_datasets):
@@ -205,20 +208,23 @@ class QTLearner:
 
     def predict(self, texts, batch_size=64):
         self.qt.eval()
-        eval_corpus = Corpus(texts, self.vocab)
+        eval_corpus = Corpus(texts, self.vocab, no_zeros=True)
         if len(eval_corpus) < batch_size:
             batch_size = len(eval_corpus)
         eval_iter = DataLoader(eval_corpus,
                                batch_size=batch_size,
                                num_workers=1,
-                               drop_last=True,
+                               drop_last=False,
                                pin_memory=True,  # send to GPU
                                collate_fn=safe_pack_sequence)
         eval_iter_tq = tqdm(eval_iter)
-        predictions = []
-        for batch_data in eval_iter_tq:
+        predictions = None
+        for i, batch_data in enumerate(eval_iter_tq):
             prediction = self.forward_pass(self.qt, batch_data, mode='eval', return_only_embedding=True)
-            predictions.extend(prediction.detach().numpy())
+            if predictions is None:
+                predictions = prediction
+            else:
+                predictions = np.vstack((predictions, prediction))
         return predictions
 
     @classmethod

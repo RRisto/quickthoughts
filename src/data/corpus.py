@@ -8,12 +8,13 @@ _LOGGER = logging.getLogger(__name__)
 
 class Corpus(Dataset):
 
-    def __init__(self, examples, vocab, max_len=50):
+    def __init__(self, examples, vocab, max_len=50, no_zeros=False):
         self.vocab = vocab
         self.examples = examples
+        self.no_zeros = no_zeros
 
     def __getitem__(self, i):
-        return torch.LongTensor(prepare_sequence(self.examples[i], self.vocab))
+        return torch.LongTensor(prepare_sequence(self.examples[i], self.vocab, no_zeros=self.no_zeros))
 
     def __len__(self):
         return len(self.examples)
