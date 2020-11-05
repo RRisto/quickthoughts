@@ -1,7 +1,7 @@
 import os
-from datetime import datetime
-
 from torch import optim
+
+from src.eval import test_performances
 
 __base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
 
@@ -22,5 +22,7 @@ CONFIG = {
     'vocab_size': 10000,
     # 'embedding': 'embedding_models/telia_w2v.bin'
     'embedding': 'glove-wiki-gigaword-300',
-    'optimiser_class': optim.Adam
+    'optimiser_class': optim.Adam,
+    'downstream_evaluation_func': test_performances,
+    'downstream_eval_datasets':['MR']
 }

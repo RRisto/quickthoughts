@@ -1,6 +1,5 @@
 import logging
 import shutil
-import time
 
 import torch
 from pathlib import Path
@@ -16,15 +15,14 @@ from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
 from src.data.corpus import create_train_eval_corpus, Corpus
-from src.eval import test_performance, test_performances
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-                 norm_threshold, config_file_name='config.json', optimiser_class=optim.Adam,
-                 metrics_filename='metrics.txt'):
+                 norm_threshold, test_downstream_task_func, test_downstream_datasets, config_file_name='config.json',
+                 optimiser_class=optim.Adam, metrics_filename='metrics.txt'):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.metrics_filename = metrics_filename
@@ -43,7 +41,8 @@ class QTLearner:
         self.qt = QuickThoughts(self.WV_MODEL, self.hidden_size)  # .cuda()
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
-        self.test_downstream_task_func = test_performances
+        self.test_downstream_task_func = test_downstream_task_func
+        self.test_downstream_task_datasets = test_downstream_datasets
 
     def gather_conf_info(self):
         return {'checkpoint_dir': str(self.checkpoint_dir),
@@ -139,14 +138,9 @@ class QTLearner:
                     torch.cuda.empty_cache()
         return loss, failed_or_skipped_batches
 
-    def eval_downstream(self, qt, vocab, loc='data', datasets=['MR']):
-        # todo make params default to conf
+    def eval_downstream(self, qt, loc='data'):
         qt.eval()
-        accs = self.test_downstream_task_func(self.predict, datasets=datasets, loc=loc)
-        # accs = []
-        # for dataset in datasets:
-        #   acc = test_performance(qt, vocab, dataset, 'data', seed=int(time.time()))
-        #  accs.append(acc)
+        accs = self.test_downstream_task_func(self.predict, datasets=self.test_downstream_task_datasets, loc=loc)
         return accs
 
     def create_dataloaders(self, eval_p=0.2):
@@ -185,8 +179,7 @@ class QTLearner:
             loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(train_iter, eval_iter, self.qt,
                                                                                    self.optimizer,
                                                                                    failed_or_skipped_batches)
-            downstream_datasets = ['MR']
-            downstream_accs = self.eval_downstream(self.qt, self.vocab, datasets=downstream_datasets)
+            downstream_accs = self.eval_downstream(self.qt)
             if best_eval_loss is None or best_eval_loss > loss_eval:
                 best_eval_loss = loss_eval
                 checkpoint_training(self.checkpoint_dir, j, self.qt, self.optimizer)
@@ -195,7 +188,7 @@ class QTLearner:
             plotter.plot('loss', 'eval', 'Loss eval', j, loss_eval.item(), xlabel='epoch')
             for acc in downstream_accs:
                 plotter.plot('acc', f'accuracy {acc[1]}', 'Downstream accuracy', j, acc[0], xlabel='epoch')
-            self.save_metrics(j, loss_train, loss_eval, downstream_accs, downstream_datasets)
+            self.save_metrics(j, loss_train, loss_eval, downstream_accs, self.test_downstream_task_datasets)
 
     def save_metrics(self, epoch, loss_train, loss_eval, donwstream_accs, downstream_datasets):
         metrics_file = self.checkpoint_dir / self.metrics_filename
@@ -236,7 +229,8 @@ class QTLearner:
         shutil.copyfile(config_path, checkpoint_dir / 'config.py')
         return cls(CONFIG['checkpoint_dir'], CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],
                    CONFIG['hidden_size'], CONFIG['lr'], CONFIG['resume'], CONFIG['num_epochs'],
-                   CONFIG['norm_threshold'], CONFIG['optimiser_class'])
+                   CONFIG['norm_threshold'], CONFIG['downstream_evaluation_func'], CONFIG['downstream_eval_datasets'],
+                   CONFIG['optimiser_class'])
 
     @classmethod
     def create_from_checkpoint(cls, checkpoint_dir, checkpoint_file_name='checkpoint_latest.pth',
@@ -247,7 +241,8 @@ class QTLearner:
         CONFIG = importlib.machinery.SourceFileLoader('CONFIG', str(config_path)).load_module().CONFIG
         learner = cls(checkpoint_dir, CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],
                       CONFIG['hidden_size'], CONFIG['lr'], CONFIG['resume'], CONFIG['num_epochs'],
-                      CONFIG['norm_threshold'], optimiser_class=CONFIG['optimiser_class'])
+                      CONFIG['norm_threshold'], CONFIG['downstream_evaluation_func'],
+                      CONFIG['downstream_eval_datasets'], optimiser_class=CONFIG['optimiser_class'])
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
         learner.qt.load_state_dict(checkpoint_states['state_dict'])
