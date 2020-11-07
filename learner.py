@@ -3,6 +3,8 @@ import shutil
 
 import torch
 from pathlib import Path
+
+from gensim.utils import tokenize
 from tqdm import tqdm
 from pprint import pformat
 from torch.utils.data.dataloader import DataLoader
@@ -21,8 +23,8 @@ _LOGGER = logging.getLogger(__name__)
 
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-                 norm_threshold, test_downstream_task_func, test_downstream_datasets, config_file_name='config.json',
-                 optimiser_class=optim.Adam, metrics_filename='metrics.txt'):
+                 norm_threshold, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
+                 config_file_name='config.json', optimiser_class=optim.Adam, metrics_filename='metrics.txt'):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.metrics_filename = metrics_filename
@@ -35,6 +37,7 @@ class QTLearner:
         self.num_epochs = num_epochs
         self.norm_threshold = norm_threshold
         self.optimizer_class = optimiser_class
+        self.tokenizer_func = tokenizer_func
         self.WV_MODEL = load_pretrained_embeddings(self.embedding)
         self.vocab = self.WV_MODEL.vocab
         # model, optimizer, and loss function
@@ -144,7 +147,8 @@ class QTLearner:
         return accs
 
     def create_dataloaders(self, eval_p=0.2):
-        bookcorpus_train, bookcorpus_eval = create_train_eval_corpus(self.data_path, self.vocab, eval_p)
+        bookcorpus_train, bookcorpus_eval = create_train_eval_corpus(self.data_path, self.vocab, self.tokenizer_func,
+                                                                     eval_p)
         train_iter = DataLoader(bookcorpus_train,
                                 batch_size=self.batch_size,
                                 num_workers=1,
@@ -201,7 +205,7 @@ class QTLearner:
 
     def predict(self, texts, batch_size=64):
         self.qt.eval()
-        eval_corpus = Corpus(texts, self.vocab, no_zeros=True)
+        eval_corpus = Corpus(texts, self.vocab, tokenizer_func=self.tokenizer_func, no_zeros=True)
         if len(eval_corpus) < batch_size:
             batch_size = len(eval_corpus)
         eval_iter = DataLoader(eval_corpus,
@@ -227,10 +231,15 @@ class QTLearner:
         checkpoint_dir = Path(CONFIG['checkpoint_dir'])
         checkpoint_dir.mkdir()
         shutil.copyfile(config_path, checkpoint_dir / 'config.py')
-        return cls(CONFIG['checkpoint_dir'], CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],
-                   CONFIG['hidden_size'], CONFIG['lr'], CONFIG['resume'], CONFIG['num_epochs'],
-                   CONFIG['norm_threshold'], CONFIG['downstream_evaluation_func'], CONFIG['downstream_eval_datasets'],
-                   CONFIG['optimiser_class'])
+        return cls(checkpoint_dir=CONFIG['checkpoint_dir'], embedding=CONFIG['embedding'],
+                   data_path=CONFIG['data_path'],
+                   batch_size=CONFIG['batch_size'],
+                   hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'], resume=CONFIG['resume'],
+                   num_epochs=CONFIG['num_epochs'],
+                   norm_threshold=CONFIG['norm_threshold'],
+                   test_downstream_task_func=CONFIG['downstream_evaluation_func'],
+                   test_downstream_datasets=CONFIG['downstream_eval_datasets'],
+                   optimiser_class=CONFIG['optimiser_class'])
 
     @classmethod
     def create_from_checkpoint(cls, checkpoint_dir, checkpoint_file_name='checkpoint_latest.pth',
@@ -239,10 +248,14 @@ class QTLearner:
         checkpoint_dir = Path(checkpoint_dir)
         config_path = checkpoint_dir / config_file_name
         CONFIG = importlib.machinery.SourceFileLoader('CONFIG', str(config_path)).load_module().CONFIG
-        learner = cls(checkpoint_dir, CONFIG['embedding'], CONFIG['data_path'], CONFIG['batch_size'],
-                      CONFIG['hidden_size'], CONFIG['lr'], CONFIG['resume'], CONFIG['num_epochs'],
-                      CONFIG['norm_threshold'], CONFIG['downstream_evaluation_func'],
-                      CONFIG['downstream_eval_datasets'], optimiser_class=CONFIG['optimiser_class'])
+        learner = cls(checkpoint_dir=checkpoint_dir, embedding=CONFIG['embedding'], data_path=CONFIG['data_path'],
+                      batch_size=CONFIG['batch_size'],
+                      hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'], resume=CONFIG['resume'],
+                      num_epochs=CONFIG['num_epochs'],
+                      norm_threshold=CONFIG['norm_threshold'],
+                      test_downstream_task_func=CONFIG['downstream_evaluation_func'],
+                      test_downstream_datasets=CONFIG['downstream_eval_datasets'],
+                      optimiser_class=CONFIG['optimiser_class'])
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
         learner.qt.load_state_dict(checkpoint_states['state_dict'])

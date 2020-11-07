@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4e74cf5a-f97f-4d8c-b4c2-be6cff0b0028" name="Default Changelist" comment="load optim from conf">
-      <change afterPath="$PROJECT_DIR$/get_vectors_dev.py" afterDir="false" />
+    <list default="true" id="4e74cf5a-f97f-4d8c-b4c2-be6cff0b0028" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/learner.py" beforeDir="false" afterPath="$PROJECT_DIR$/learner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config_dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/config_dev.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data/corpus.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/data/corpus.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/data/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/data/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/qt_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/qt_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_dev.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,19 +21,31 @@
     <SUITE FILE_PATH="coverage/quickthoughts$get_vectors.coverage" NAME="get_vectors Coverage Results" MODIFIED="1597854825137" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/quickthoughts$test_dev.coverage" NAME="test_dev Coverage Results" MODIFIED="1603035657709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/quickthoughts$preprocess.coverage" NAME="preprocess Coverage Results" MODIFIED="1597253739003" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/quickthoughts$train_dev.coverage" NAME="train_dev Coverage Results" MODIFIED="1604161350526" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/quickthoughts$train_dev.coverage" NAME="train_dev Coverage Results" MODIFIED="1604761034444" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/quickthoughts$train_sample_word2vec.coverage" NAME="train_sample_word2vec Coverage Results" MODIFIED="1598723737273" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/quickthoughts$train.coverage" NAME="train Coverage Results" MODIFIED="1597855897375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/quickthoughts$get_vectors_dev.coverage" NAME="get_vectors_dev Coverage Results" MODIFIED="1604238824074" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/quickthoughts$train_dev_from_checkpoint.coverage" NAME="train_dev_from_checkpoint Coverage Results" MODIFIED="1604164233172" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/quickthoughts$train_dev_from_checkpoint.coverage" NAME="train_dev_from_checkpoint Coverage Results" MODIFIED="1604600933219" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/learner.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="380">
-              <caret line="219" column="103" selection-start-line="219" selection-start-column="103" selection-end-line="219" selection-end-column="103" />
+            <state relative-caret-position="-5">
+              <caret line="207" column="63" selection-start-line="207" selection-start-column="63" selection-end-line="207" selection-end-column="63" />
+              <folding>
+                <element signature="e#0#14#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="441">
+              <caret line="101" selection-start-line="101" selection-end-line="101" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -41,8 +56,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/qt_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
-              <caret line="30" column="48" selection-start-line="30" selection-start-column="48" selection-end-line="30" selection-end-column="48" />
+            <state relative-caret-position="133">
+              <caret line="26" column="55" selection-start-line="26" selection-start-column="55" selection-end-line="26" selection-end-column="55" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -51,31 +66,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/get_vectors.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="17" column="14" selection-start-line="17" selection-start-column="14" selection-end-line="17" selection-end-column="14" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/eval.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="73" column="36" selection-start-line="73" selection-start-column="36" selection-end-line="73" selection-end-column="53" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/data/corpus.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="10" column="8" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
+            <state relative-caret-position="357">
+              <caret line="21" selection-start-line="21" selection-end-line="21" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -86,9 +80,19 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/data/utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="85">
+              <caret line="5" column="47" selection-start-line="5" selection-start-column="47" selection-end-line="5" selection-end-column="47" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/eval.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-696">
+              <caret line="62" column="51" selection-start-line="62" selection-start-column="51" selection-end-line="62" selection-end-column="51" />
               <folding>
-                <element signature="e#0#21#0" expanded="true" />
+                <element signature="e#221#232#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -106,10 +110,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_dev.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret selection-end-line="5" selection-end-column="17" />
+            <state relative-caret-position="425">
+              <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
               <folding>
-                <element signature="e#0#29#0" expanded="true" />
+                <element signature="e#0#13#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -118,8 +122,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/config_dev.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="11" column="23" selection-start-line="11" selection-start-column="23" selection-end-line="11" selection-end-column="23" />
+            <state relative-caret-position="394">
+              <caret line="24" column="32" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="68" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -161,28 +165,28 @@
         <option value="$PROJECT_DIR$/get_vectors.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/src/data/vocab.py" />
-        <option value="$PROJECT_DIR$/src/utils.py" />
         <option value="$PROJECT_DIR$/test_dev.py" />
         <option value="$PROJECT_DIR$/src/config.py" />
         <option value="$PROJECT_DIR$/train_sample_word2vec.py" />
-        <option value="$PROJECT_DIR$/src/eval.py" />
         <option value="$PROJECT_DIR$/src/data/bookcorpus.py" />
         <option value="$PROJECT_DIR$/train.py" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/src/config_dev.py" />
         <option value="$PROJECT_DIR$/train_dev_from_checkpoint.py" />
-        <option value="$PROJECT_DIR$/train_dev.py" />
-        <option value="$PROJECT_DIR$/src/data/corpus.py" />
-        <option value="$PROJECT_DIR$/src/data/utils.py" />
         <option value="$PROJECT_DIR$/get_vectors_dev.py" />
-        <option value="$PROJECT_DIR$/src/qt_model.py" />
+        <option value="$PROJECT_DIR$/src/eval.py" />
+        <option value="$PROJECT_DIR$/src/config_dev.py" />
+        <option value="$PROJECT_DIR$/src/utils.py" />
+        <option value="$PROJECT_DIR$/src/data/corpus.py" />
+        <option value="$PROJECT_DIR$/train_dev.py" />
         <option value="$PROJECT_DIR$/learner.py" />
+        <option value="$PROJECT_DIR$/src/qt_model.py" />
+        <option value="$PROJECT_DIR$/src/data/utils.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1858" />
-    <option name="y" value="21" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
   </component>
@@ -191,7 +195,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -202,18 +205,12 @@
             <path>
               <item name="quickthoughts" type="b2602c69:ProjectViewProjectNode" />
               <item name="quickthoughts" type="462c0819:PsiDirectoryNode" />
-              <item name="checkpoints" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quickthoughts" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quickthoughts" type="462c0819:PsiDirectoryNode" />
-              <item name="checkpoints" type="462c0819:PsiDirectoryNode" />
-              <item name="dev" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quickthoughts" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quickthoughts" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="quickthoughts" type="b2602c69:ProjectViewProjectNode" />
+              <item name="quickthoughts" type="462c0819:PsiDirectoryNode" />
+              <item name="embedding_models" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="quickthoughts" type="b2602c69:ProjectViewProjectNode" />
@@ -224,11 +221,12 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../punctuator-data" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../useful_scripts" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -255,7 +253,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.get_vectors_dev">
+  <component name="RunManager" selected="Python.train_dev">
     <configuration name="get_vectors_dev" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="quickthoughts" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -368,9 +366,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.get_vectors_dev" />
-        <item itemvalue="Python.train_dev_from_checkpoint" />
         <item itemvalue="Python.train_dev" />
+        <item itemvalue="Python.train_dev_from_checkpoint" />
+        <item itemvalue="Python.get_vectors_dev" />
         <item itemvalue="Python.test_dev" />
         <item itemvalue="Python.train_sample_word2vec" />
       </list>
@@ -426,7 +424,13 @@
       <workItem from="1603811172866" duration="4953000" />
       <workItem from="1603997004101" duration="386000" />
       <workItem from="1604150746152" duration="12549000" />
-      <workItem from="1604229318954" duration="6978000" />
+      <workItem from="1604229318954" duration="17090000" />
+      <workItem from="1604324781838" duration="11099000" />
+      <workItem from="1604582292030" duration="630000" />
+      <workItem from="1604586395090" duration="56000" />
+      <workItem from="1604596721794" duration="4713000" />
+      <workItem from="1604670036434" duration="1465000" />
+      <workItem from="1604751280031" duration="10726000" />
     </task>
     <task id="LOCAL-00001" summary="learner">
       <created>1598031369735</created>
@@ -575,23 +579,51 @@
       <option name="project" value="LOCAL" />
       <updated>1604164811233</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="predict on new texts">
+      <created>1604239033278</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1604239033279</updated>
+    </task>
+    <task id="LOCAL-00023" summary="predict on new texts">
+      <created>1604244422705</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1604244422705</updated>
+    </task>
+    <task id="LOCAL-00024" summary="evaluate downstream task">
+      <created>1604600534107</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1604600534108</updated>
+    </task>
+    <task id="LOCAL-00025" summary="donwstream task info 2 conf">
+      <created>1604601776750</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1604601776751</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="207665000" />
+    <option name="totallyTimeSpent" value="246466000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21215352" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2249467" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32936078" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.31960997" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.34127843" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2535211" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.36944744" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -599,8 +631,8 @@
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32936078" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.18526544" />
-      <window_info anchor="bottom" id="Python Console" order="12" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.27735645" />
+      <window_info anchor="bottom" id="Python Console" order="12" weight="0.32936078" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -655,40 +687,18 @@
     <MESSAGE value="load learner from checkpoint" />
     <MESSAGE value="conf2 .py file." />
     <MESSAGE value="save metrics" />
-    <option name="LAST_COMMIT_MESSAGE" value="save metrics" />
+    <MESSAGE value="predict on new texts" />
+    <MESSAGE value="evaluate downstream task" />
+    <MESSAGE value="donwstream task info 2 conf" />
+    <option name="LAST_COMMIT_MESSAGE" value="donwstream task info 2 conf" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/get_vectors.py</url>
-          <line>39</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/learner.py</url>
-          <line>55</line>
-          <option name="timeStamp" value="89" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/get_vectors_dev.py</url>
           <line>4</line>
           <option name="timeStamp" value="91" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/learner.py</url>
-          <line>207</line>
-          <option name="timeStamp" value="92" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/learner.py</url>
-          <line>89</line>
-          <option name="timeStamp" value="93" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/learner.py</url>
-          <line>66</line>
-          <option name="timeStamp" value="95" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -703,94 +713,98 @@
   <component name="debuggerHistoryManager">
     <expressions id="evaluateCodeFragment">
       <expression>
-        <expression-string>enc.size()</expression-string>
+        <expression-string>prepare_sequence(self.examples[i], self.vocab, self.tokenizer_func, max_len=self.max_len,
+                               no_zeros=self.no_zeros)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>enc.suze()</expression-string>
+        <expression-string>plotter.plot('acc', f'accuracy {downstream_accs[i][1]}', 'Downstream accuracy', j, downstream_accs[i][0],
+                             xlabel='epoch')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>self.fit_batch(self.qt, batch_data, mode='eval')</expression-string>
+        <expression-string>plotter.plot('acc', f'accuracy {downstream_datasets[i]}', 'Downstream accuracy', j, downstream_accs[i][0],
+                             xlabel='epoch')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>learner.predict(['hi my name is sanyam .'])</expression-string>
+        <expression-string>plotter.plot('acc', f'accuracy {downstream_datasets[i]}', 'Downstream accuracy', j, downstream_accs[i],
+                             xlabel='epoch')</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>enc[:, :self.hidden_size], enc[:, self.hidden_size:]</expression-string>
+        <expression-string>text[7290:7310]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>qt(data)</expression-string>
+        <expression-string>len(eval_corpus)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>self.forward_pass(qt, data, mode)</expression-string>
+        <expression-string>texts[8000:]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>self.qt.eval()</expression-string>
+        <expression-string>len(texts)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>qt=qt.eval()</expression-string>
+        <expression-string>texts[:7290:7330]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
     </expressions>
     <expressions id="evaluateExpression">
       <expression>
-        <expression-string>importlib.machinery.SourceFileLoader('CONFIG', PurePath(config_path)).load_module()</expression-string>
+        <expression-string>self.gru(packed.float(), hidden)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>importlib.machinery.SourceFileLoader('CONFIG', config_path.absolute()).load_module()</expression-string>
+        <expression-string>self.gru(packed, hidden.float())</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>importlib.machinery.SourceFileLoader('CONFIG', config_path).load_module()</expression-string>
+        <expression-string>self.gru(packed, hidden.float)()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>Path(checkpoint_dir) / config_file_name</expression-string>
+        <expression-string>self.gru(packed, hidden)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>importlib.machinery.SourceFileLoader('CONFIG', config_path).load_module().CONFIG</expression-string>
+        <expression-string>pickle.load(f)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>from src.config_dev import CONFIG</expression-string>
+        <expression-string>accs.extend(acc_t)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>from config_dev import CONFIG</expression-string>
+        <expression-string>feature_list.shape</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>self.optimizer_class.__module__</expression-string>
+        <expression-string>10662-166*64</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>self.optimizer_class.__class__</expression-string>
+        <expression-string>10662-166*64+64</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -824,13 +838,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../Anaconda3/Lib/site-packages/gensim/downloader.py">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../.PyCharm2018.3/system/python_stubs/1635582686/builtins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="178">
-          <caret line="246" column="4" selection-start-line="246" selection-start-column="4" selection-end-line="246" selection-end-column="4" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/checkpoints/08-16-10-53-39/config.json" />
     <entry file="file://$PROJECT_DIR$/proov/config.json" />
@@ -930,13 +937,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="543">
-          <caret line="42" column="5" selection-start-line="42" selection-start-column="5" selection-end-line="42" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/checkpoints/10-31-16-17-05/config.json" />
     <entry file="file://$PROJECT_DIR$/../Anaconda3/Lib/site-packages/torch/__init__.pyi">
       <provider selected="true" editor-type-id="text-editor">
@@ -954,33 +954,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/config_dev.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="11" column="23" selection-start-line="11" selection-start-column="23" selection-end-line="11" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dev.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train_dev.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="5" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/dev.ipynb" />
     <entry file="file://$PROJECT_DIR$/train_dev_from_checkpoint.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -1001,37 +975,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/eval.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="73" column="36" selection-start-line="73" selection-start-column="36" selection-end-line="73" selection-end-column="53" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/get_vectors.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="14" selection-start-line="17" selection-start-column="14" selection-end-line="17" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/get_vectors.py" />
     <entry file="file://$PROJECT_DIR$/../Anaconda3/Lib/site-packages/torch/utils/data/dataloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="119" column="8" selection-start-line="119" selection-start-column="8" selection-end-line="119" selection-end-column="8" />
+        <state relative-caret-position="157">
+          <caret line="374" column="8" selection-start-line="374" selection-start-column="8" selection-end-line="374" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/qt_model.py">
+    <entry file="file://$PROJECT_DIR$/../.PyCharm2018.3/system/python_stubs/1635582686/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="30" column="48" selection-start-line="30" selection-start-column="48" selection-end-line="30" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="158">
+          <caret line="246" column="4" selection-start-line="246" selection-start-column="4" selection-end-line="246" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -1042,29 +997,84 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/utils.py">
+    <entry file="file://$PROJECT_DIR$/src/eval.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="-696">
+          <caret line="62" column="51" selection-start-line="62" selection-start-column="51" selection-end-line="62" selection-end-column="51" />
           <folding>
-            <element signature="e#0#21#0" expanded="true" />
+            <element signature="e#221#232#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/corpus.py">
+    <entry file="file://$PROJECT_DIR$/src/config_dev.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="8" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
+        <state relative-caret-position="394">
+          <caret line="24" column="32" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="68" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../Anaconda3/Lib/site-packages/torch/optim/optimizer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="199" selection-start-line="199" selection-end-line="199" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/qt_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="26" column="55" selection-start-line="26" selection-start-column="55" selection-end-line="26" selection-end-column="55" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="441">
+          <caret line="101" selection-start-line="101" selection-end-line="101" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/data/corpus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train_dev.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/data/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="47" selection-start-line="5" selection-start-column="47" selection-end-line="5" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/learner.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="219" column="103" selection-start-line="219" selection-start-column="103" selection-end-line="219" selection-end-column="103" />
+        <state relative-caret-position="-5">
+          <caret line="207" column="63" selection-start-line="207" selection-start-column="63" selection-end-line="207" selection-end-column="63" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>

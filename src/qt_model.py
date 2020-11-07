@@ -24,7 +24,7 @@ class GRUEncoder(nn.Module):
         embeds = self.embeddings(raw_inputs)
         hidden = torch.zeros(2 if self.bidirectional else 1, embeds.shape[1], self.hidden_size, device = self.device)
         packed = pack_padded_sequence(embeds, lengths, enforce_sorted=False)
-        packed_output, hidden = self.gru(packed, hidden)
+        packed_output, hidden = self.gru(packed.float(), hidden)
         unpacked, _ = pad_packed_sequence(packed_output)
         idx = (lengths - 1).view(-1, 1).expand(unpacked.size(1),
                                                unpacked.size(2)).unsqueeze(0).to(self.device)
