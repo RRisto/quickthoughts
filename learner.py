@@ -24,7 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
                  norm_threshold, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
-                 config_file_name='config.json', optimiser_class=optim.Adam, metrics_filename='metrics.txt'):
+                 config_file_name='config.json', optimizer_class=optim.Adam, metrics_filename='metrics.txt',
+                 eval_p=0.2):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.metrics_filename = metrics_filename
@@ -36,10 +37,10 @@ class QTLearner:
         self.resume = resume
         self.num_epochs = num_epochs
         self.norm_threshold = norm_threshold
-        self.optimizer_class = optimiser_class
+        self.optimizer_class = optimizer_class
         self.tokenizer_func = tokenizer_func
         self.WV_MODEL = load_pretrained_embeddings(self.embedding)
-        self.vocab = self.WV_MODEL.vocab
+        self.train_iter, self.eval_iter, self.stoi = self.create_dataloaders(eval_p)
         # model, optimizer, and loss function
         self.qt = QuickThoughts(self.WV_MODEL, self.hidden_size)  # .cuda()
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
@@ -147,8 +148,7 @@ class QTLearner:
         return accs
 
     def create_dataloaders(self, eval_p=0.2):
-        bookcorpus_train, bookcorpus_eval = create_train_eval_corpus(self.data_path, self.vocab, self.tokenizer_func,
-                                                                     eval_p)
+        bookcorpus_train, bookcorpus_eval, stoi = create_train_eval_corpus(self.data_path, self.tokenizer_func, eval_p)
         train_iter = DataLoader(bookcorpus_train,
                                 batch_size=self.batch_size,
                                 num_workers=1,
@@ -162,15 +162,12 @@ class QTLearner:
                                drop_last=True,
                                pin_memory=True,  # send to GPU
                                collate_fn=safe_pack_sequence)
-        return train_iter, eval_iter
+        return train_iter, eval_iter, stoi
 
     def fit(self):
         self._init_logging()
 
         plotter = VisdomLinePlotter()
-
-        # create datasets
-        train_iter, eval_iter = self.create_dataloaders()
 
         # start training
         self.qt = self.qt.train()
@@ -180,7 +177,8 @@ class QTLearner:
         # block_size = 5
         best_eval_loss = None
         for j in range(self.num_epochs):
-            loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(train_iter, eval_iter, self.qt,
+            loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(self.train_iter, self.eval_iter,
+                                                                                   self.qt,
                                                                                    self.optimizer,
                                                                                    failed_or_skipped_batches)
             downstream_accs = self.eval_downstream(self.qt)
@@ -205,7 +203,7 @@ class QTLearner:
 
     def predict(self, texts, batch_size=64):
         self.qt.eval()
-        eval_corpus = Corpus(texts, self.vocab, tokenizer_func=self.tokenizer_func, no_zeros=True)
+        eval_corpus = Corpus(texts, self.stoi, tokenizer_func=self.tokenizer_func, no_zeros=True)
         if len(eval_corpus) < batch_size:
             batch_size = len(eval_corpus)
         eval_iter = DataLoader(eval_corpus,
@@ -239,7 +237,7 @@ class QTLearner:
                    norm_threshold=CONFIG['norm_threshold'],
                    test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                    test_downstream_datasets=CONFIG['downstream_eval_datasets'],
-                   optimiser_class=CONFIG['optimiser_class'])
+                   optimizer_class=CONFIG['optimiser_class'])
 
     @classmethod
     def create_from_checkpoint(cls, checkpoint_dir, checkpoint_file_name='checkpoint_latest.pth',
@@ -255,7 +253,7 @@ class QTLearner:
                       norm_threshold=CONFIG['norm_threshold'],
                       test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                       test_downstream_datasets=CONFIG['downstream_eval_datasets'],
-                      optimiser_class=CONFIG['optimiser_class'])
+                      optimizer_class=CONFIG['optimiser_class'])
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
         learner.qt.load_state_dict(checkpoint_states['state_dict'])
