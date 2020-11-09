@@ -80,6 +80,9 @@ class VisdomLinePlotter(object):
 
 
 def load_pretrained_embeddings(file_path):
+    if file_path is None:
+        return None
+
     # function to return pretrained embeddings, embeddings should have:
     # embeddings.vocab - dict {word: id}
     # embeddings.vectors - np array of pretrianed wordvectors, position in array is word id in vocab

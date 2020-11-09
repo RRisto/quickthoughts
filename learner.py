@@ -42,7 +42,7 @@ class QTLearner:
         self.WV_MODEL = load_pretrained_embeddings(self.embedding)
         self.train_iter, self.eval_iter, self.stoi = self.create_dataloaders(eval_p)
         # model, optimizer, and loss function
-        self.qt = QuickThoughts(self.WV_MODEL, self.hidden_size)  # .cuda()
+        self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size)  # .cuda()
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
         self.test_downstream_task_func = test_downstream_task_func
