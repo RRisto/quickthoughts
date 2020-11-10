@@ -164,10 +164,10 @@ class QTLearner:
                                collate_fn=safe_pack_sequence)
         return train_iter, eval_iter, stoi
 
-    def fit(self):
+    def fit(self, plot=True):
         self._init_logging()
-
-        plotter = VisdomLinePlotter()
+        if plot:
+            plotter = VisdomLinePlotter()
 
         # start training
         self.qt = self.qt.train()
@@ -186,10 +186,11 @@ class QTLearner:
                 best_eval_loss = loss_eval
                 checkpoint_training(self.checkpoint_dir, j, self.qt, self.optimizer)
 
-            plotter.plot('loss', 'train', 'Loss train', j, loss_train.item(), xlabel='epoch')
-            plotter.plot('loss', 'eval', 'Loss eval', j, loss_eval.item(), xlabel='epoch')
-            for acc in downstream_accs:
-                plotter.plot('acc', f'accuracy {acc[1]}', 'Downstream accuracy', j, acc[0], xlabel='epoch')
+            if plot:
+                plotter.plot('loss', 'train', 'Loss train', j, loss_train.item(), xlabel='epoch')
+                plotter.plot('loss', 'eval', 'Loss eval', j, loss_eval.item(), xlabel='epoch')
+                for acc in downstream_accs:
+                    plotter.plot('acc', f'accuracy {acc[1]}', 'Downstream accuracy', j, acc[0], xlabel='epoch')
             self.save_metrics(j, loss_train, loss_eval, downstream_accs, self.test_downstream_task_datasets)
 
     def save_metrics(self, epoch, loss_train, loss_eval, donwstream_accs, downstream_datasets):
