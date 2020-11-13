@@ -1,3 +1,4 @@
+import os
 import pickle
 import shutil
 
@@ -23,6 +24,7 @@ class Emb:
 
 
 if __name__ == '__main__':
-    shutil.rmtree('checkpoints/dev')
+    if os.path.isdir('checkpoints/dev'):
+        shutil.rmtree('checkpoints/dev')
     learner = QTLearner.create_from_conf('src/config_dev.py')
-    learner.fit()
+    learner.fit(plot=True)

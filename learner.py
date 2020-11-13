@@ -25,7 +25,7 @@ class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
                  norm_threshold, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
                  config_file_name='config.json', optimizer_class=optim.Adam, metrics_filename='metrics.txt',
-                 eval_p=0.2):
+                 eval_p=0.2, cuda=False):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.metrics_filename = metrics_filename
@@ -42,7 +42,9 @@ class QTLearner:
         self.WV_MODEL = load_pretrained_embeddings(self.embedding)
         self.train_iter, self.eval_iter, self.stoi = self.create_dataloaders(eval_p)
         # model, optimizer, and loss function
-        self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size)  # .cuda()
+        self.cuda = cuda
+        self.device = 'cuda' if self.cuda else 'cpu'
+        self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, cuda=self.cuda).to(self.device)  # .cuda()
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
         self.test_downstream_task_func = test_downstream_task_func
@@ -71,7 +73,7 @@ class QTLearner:
         else:  # in eval mode returns concatenated enc_f and enc_g
             enc = qt(data)
             if return_only_embedding:
-                return enc.detach().numpy()
+                return enc.detach().cpu().numpy()
             enc_f, enc_g = enc[:, :self.hidden_size], enc[:, self.hidden_size:]
 
         # calculate scores
@@ -82,6 +84,7 @@ class QTLearner:
             mask = torch.eye(len(scores)).cuda().bool()
         else:
             mask = torch.eye(len(scores)).bool()
+
         scores.masked_fill_(mask, 0)
 
         # return log scores and target
@@ -164,7 +167,7 @@ class QTLearner:
                                collate_fn=safe_pack_sequence)
         return train_iter, eval_iter, stoi
 
-    def fit(self, plot=True):
+    def fit(self, plot=False):
         self._init_logging()
         if plot:
             plotter = VisdomLinePlotter()

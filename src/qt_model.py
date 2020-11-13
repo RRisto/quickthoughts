@@ -26,6 +26,7 @@ class GRUEncoder(nn.Module):
         # unpack to get the info we need
         raw_inputs, lengths = pad_packed_sequence(packed_input)
         max_seq_len = torch.max(lengths)
+        raw_inputs = raw_inputs.to(self.device)
         embeds = self.embeddings(raw_inputs)
         hidden = torch.zeros(2 if self.bidirectional else 1, embeds.shape[1], self.hidden_size, device=self.device)
         packed = pack_padded_sequence(embeds, lengths, enforce_sorted=False)

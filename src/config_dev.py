@@ -8,7 +8,7 @@ __base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
 CONFIG = {
     'base_dir': __base_dir,
     'vec_path': '{}/data/GoogleNews-vectors-negative300.bin'.format(__base_dir),
-    'data_path': '{}/data/cleaned.txt'.format(__base_dir),
+    'data_path': 'data/cleaned.txt',
     'checkpoint_dir': 'checkpoints/dev',
     'resume': False,
     'context_size': 1,
