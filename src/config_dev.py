@@ -22,8 +22,8 @@ CONFIG = {
     'vocab_size': 10000,
     # 'embedding': 'embedding_models/telia_w2v.bin'
     # 'embedding': 'glove-wiki-gigaword-300',
-    # 'embedding': f'{__base_dir}/embedding_models/dev_subset_embs.pkl',
-    'embedding': None,
+    'embedding': f'{__base_dir}/embedding_models/dev_subset_embs.pkl',
+    # 'embedding': None,
     'optimiser_class': optim.Adam,
     'downstream_evaluation_func': test_performances,
     'downstream_eval_datasets': ['MR']
