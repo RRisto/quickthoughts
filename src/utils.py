@@ -103,7 +103,7 @@ def load_pretrained_embeddings(file_path):
     # embeddings.vocab - dict {word: id}
     # embeddings.vectors - np array of pretrianed wordvectors, position in array is word id in vocab
     # todo change after dev
-    # WV_MODEL = api.load(file_path)
+    WV_MODEL = api.load(file_path)
 
-    WV_MODEL = Emb.load(file_path)
+    # WV_MODEL = Emb.load(file_path)
     return WV_MODEL

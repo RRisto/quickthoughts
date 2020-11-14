@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
-                 norm_threshold, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
+                 norm_threshold, emb_dim, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
                  config_file_name='config.json', optimizer_class=optim.Adam, metrics_filename='metrics.txt',
                  eval_p=0.2, cuda=False):
         self.checkpoint_dir = Path(checkpoint_dir)
@@ -37,6 +37,7 @@ class QTLearner:
         self.resume = resume
         self.num_epochs = num_epochs
         self.norm_threshold = norm_threshold
+        self.emb_dim = emb_dim
         self.optimizer_class = optimizer_class
         self.tokenizer_func = tokenizer_func
         self.WV_MODEL = load_pretrained_embeddings(self.embedding)
@@ -44,7 +45,8 @@ class QTLearner:
         # model, optimizer, and loss function
         self.cuda = cuda
         self.device = 'cuda' if self.cuda else 'cpu'
-        self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, cuda=self.cuda).to(self.device)  # .cuda()
+        self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim, cuda=self.cuda).to(
+            self.device)
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
         self.test_downstream_task_func = test_downstream_task_func
@@ -233,12 +235,16 @@ class QTLearner:
         checkpoint_dir = Path(CONFIG['checkpoint_dir'])
         checkpoint_dir.mkdir()
         shutil.copyfile(config_path, checkpoint_dir / 'config.py')
-        return cls(checkpoint_dir=CONFIG['checkpoint_dir'], embedding=CONFIG['embedding'],
+        return cls(checkpoint_dir=CONFIG['checkpoint_dir'],
+                   embedding=CONFIG['embedding'],
                    data_path=CONFIG['data_path'],
                    batch_size=CONFIG['batch_size'],
-                   hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'], resume=CONFIG['resume'],
+                   hidden_size=CONFIG['hidden_size'],
+                   lr=CONFIG['lr'],
+                   resume=CONFIG['resume'],
                    num_epochs=CONFIG['num_epochs'],
                    norm_threshold=CONFIG['norm_threshold'],
+                   emb_dim=CONFIG['emb_dim'],
                    test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                    test_downstream_datasets=CONFIG['downstream_eval_datasets'],
                    optimizer_class=CONFIG['optimiser_class'])
@@ -250,11 +256,15 @@ class QTLearner:
         checkpoint_dir = Path(checkpoint_dir)
         config_path = checkpoint_dir / config_file_name
         CONFIG = importlib.machinery.SourceFileLoader('CONFIG', str(config_path)).load_module().CONFIG
-        learner = cls(checkpoint_dir=checkpoint_dir, embedding=CONFIG['embedding'], data_path=CONFIG['data_path'],
+        learner = cls(checkpoint_dir=checkpoint_dir,
+                      embedding=CONFIG['embedding'],
+                      data_path=CONFIG['data_path'],
                       batch_size=CONFIG['batch_size'],
-                      hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'], resume=CONFIG['resume'],
+                      hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'],
+                      resume=CONFIG['resume'],
                       num_epochs=CONFIG['num_epochs'],
                       norm_threshold=CONFIG['norm_threshold'],
+                      emb_dim=CONFIG['emb_dim'],
                       test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                       test_downstream_datasets=CONFIG['downstream_eval_datasets'],
                       optimizer_class=CONFIG['optimiser_class'])

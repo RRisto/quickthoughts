@@ -20,10 +20,9 @@ CONFIG = {
     'num_epochs': 50,
     'lr': 5e-4,
     'vocab_size': 10000,
-    # 'embedding': 'embedding_models/telia_w2v.bin'
-    # 'embedding': 'glove-wiki-gigaword-300',
-    'embedding': f'{__base_dir}/embedding_models/dev_subset_embs.pkl',
+    'embedding': 'glove-wiki-gigaword-50',
     # 'embedding': None,
+    'emb_dim': 300,  # needed if embedding is False
     'optimiser_class': optim.Adam,
     'downstream_evaluation_func': test_performances,
     'downstream_eval_datasets': ['MR']

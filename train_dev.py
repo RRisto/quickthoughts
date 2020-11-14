@@ -2,7 +2,6 @@ import os
 import shutil
 
 from src.learner import QTLearner
-from src.utils import Emb
 
 if __name__ == '__main__':
     if os.path.isdir('checkpoints/dev'):
