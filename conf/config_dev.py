@@ -1,7 +1,7 @@
 import os
 from torch import optim
 
-from src.eval import test_performances
+from src_custom.eval import test_performances
 
 __base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
 
