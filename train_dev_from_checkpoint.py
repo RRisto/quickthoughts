@@ -1,4 +1,4 @@
-from learner import QTLearner
+from src.learner import QTLearner
 from src.utils import Emb
 
 if __name__ == '__main__':
