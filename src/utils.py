@@ -1,4 +1,5 @@
 import logging
+import os
 import pickle
 
 import torch
@@ -6,6 +7,7 @@ from visdom import Visdom
 from torch.nn.utils.rnn import pack_sequence
 import numpy as np
 import gensim.downloader as api
+from gensim.models import KeyedVectors
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -78,22 +80,6 @@ class VisdomLinePlotter(object):
             self.viz.line(X=np.array([x]), Y=np.array([y]), env=self.env, win=self.plots[var_name], name=split_name,
                           update='append')
 
-class Emb:
-    def __init__(self, vocab, embeddings):
-        self.vocab = vocab
-        self.vectors = embeddings
-
-    def save(self, filename):
-        """save class as self.name.txt"""
-        with open(filename, 'wb') as f:
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-    @staticmethod
-    def load(filename):
-        """try load self.name.txt"""
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
-
 
 def load_pretrained_embeddings(file_path):
     if file_path is None:
@@ -102,8 +88,9 @@ def load_pretrained_embeddings(file_path):
     # function to return pretrained embeddings, embeddings should have:
     # embeddings.vocab - dict {word: id}
     # embeddings.vectors - np array of pretrianed wordvectors, position in array is word id in vocab
-    # todo change after dev
-    WV_MODEL = api.load(file_path)
+    if os.path.isfile(file_path):
+        WV_MODEL = KeyedVectors.load(file_path)
+    else:
+        WV_MODEL = api.load(file_path)
 
-    # WV_MODEL = Emb.load(file_path)
     return WV_MODEL
