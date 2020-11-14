@@ -5,7 +5,7 @@ original pytorch [implementation](https://github.com/jcaip/quickthoughts).
 
 ## Changes
 
-I've refactored original code a bit. Made Learner class for simpler model creation. 
+I've refactored original code a bit. Made Learner class for simpler model creation. Support for sentencepiece tokenizer.
 ### Train
 
 1. download data and clean it (lowercase, add space between punctuation)
