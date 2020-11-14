@@ -18,7 +18,8 @@ I've refactored original code a bit. Made Learner class for simpler model creati
       - add the name of your dataset to your conf (`conf/conf_dev.py`) in the key `downstream_eval_datasets` 
       (you can add multiple downstream tasks, just make sure you add them to the conf and `load_encode_data` 
       knows how to read in the data). During training downstream performance is saved/displayed
-4. train model (example script `train_dev.py` or if you want to train from checkpoint `train_dev_from_checkpoint.py`)
+4. if you want to use sentencepiece tokenizer, add path to the model in the conf file 
+5. train model (example script `train_dev.py` or if you want to train from checkpoint `train_dev_from_checkpoint.py`)
 
 ### Use model
 
