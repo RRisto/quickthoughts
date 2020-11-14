@@ -3,8 +3,8 @@ from tqdm import tqdm
 
 def prepare_sequence(text, vocab, tokenizer_func, max_len=50, no_zeros=False):
     pruned_sequence = zip(filter(lambda x: x in vocab, tokenizer_func(text)), range(max_len))
-    #todo custom dict doesnt have .index method
-    #seq = [vocab[x].index for (x, _) in pruned_sequence]
+    # todo custom dict doesnt have .index method
+    # seq = [vocab[x].index for (x, _) in pruned_sequence]
     seq = [vocab[x] for (x, _) in pruned_sequence]
     if len(seq) == 0 and no_zeros:
         return [1]
