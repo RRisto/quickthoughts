@@ -15,7 +15,7 @@ import numpy as np
 
 from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
-from src.utils import checkpoint_training, restore_training, safe_pack_sequence, VisdomLinePlotter
+from src.utils import checkpoint_training, safe_pack_sequence, VisdomLinePlotter
 from src.data.corpus import create_train_eval_corpus, Corpus
 
 _LOGGER = logging.getLogger(__name__)
@@ -177,9 +177,6 @@ class QTLearner:
         # start training
         self.qt = self.qt.train()
         failed_or_skipped_batches = 0
-        # last_train_idx = restore_training(self.checkpoint_dir, qt, optimizer) if self.resume else -1
-        # start = time.time()
-        # block_size = 5
         best_eval_loss = None
         for j in range(self.num_epochs):
             loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(self.train_iter, self.eval_iter,
