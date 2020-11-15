@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class QTLearner:
-    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, resume, num_epochs,
+    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, num_epochs,
                  norm_threshold, emb_dim, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
                  config_file_name='config.json', optimizer_class=optim.Adam, metrics_filename='metrics.txt',
                  eval_p=0.2, cuda=False):
@@ -34,7 +34,6 @@ class QTLearner:
         self.batch_size = batch_size
         self.hidden_size = hidden_size
         self.lr = lr
-        self.resume = resume
         self.num_epochs = num_epochs
         self.norm_threshold = norm_threshold
         self.emb_dim = emb_dim
@@ -59,7 +58,6 @@ class QTLearner:
                 'batch_size': self.batch_size,
                 'hidden_size': self.hidden_size,
                 'lr': self.lr,
-                'resume': self.resume,
                 'num_epochs': self.num_epochs,
                 'norm_threshold': self.norm_threshold,
                 'optimizer_class': self.optimizer_class
@@ -238,7 +236,6 @@ class QTLearner:
                    batch_size=CONFIG['batch_size'],
                    hidden_size=CONFIG['hidden_size'],
                    lr=CONFIG['lr'],
-                   resume=CONFIG['resume'],
                    num_epochs=CONFIG['num_epochs'],
                    norm_threshold=CONFIG['norm_threshold'],
                    emb_dim=CONFIG['emb_dim'],
@@ -258,7 +255,6 @@ class QTLearner:
                       data_path=CONFIG['data_path'],
                       batch_size=CONFIG['batch_size'],
                       hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'],
-                      resume=CONFIG['resume'],
                       num_epochs=CONFIG['num_epochs'],
                       norm_threshold=CONFIG['norm_threshold'],
                       emb_dim=CONFIG['emb_dim'],
