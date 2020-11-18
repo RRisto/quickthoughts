@@ -6,12 +6,15 @@ from src.data.utils import prepare_sequence
 
 _LOGGER = logging.getLogger(__name__)
 
+UNK_TOKEN = '<unk>'
+
 
 class Corpus(Dataset):
 
-    def __init__(self, texts, stoi, tokenizer_func, max_len=50, no_zeros=False):
+    def __init__(self, texts, stoi, tokenizer_func, max_len=50, no_zeros=False, unk_token=UNK_TOKEN):
+        self.unk_token = unk_token
         if stoi is None:
-            self.stoi = self.get_stoi(texts, tokenizer_func)
+            self.stoi = self.get_stoi(texts, tokenizer_func, self.unk_token)
         else:
             self.stoi = stoi
         self.texts = texts
@@ -27,8 +30,9 @@ class Corpus(Dataset):
     def __len__(self):
         return len(self.texts)
 
-    def get_stoi(self, texts, tokenizer_func):
-        tokens = set([item for sublist in texts for item in tokenizer_func(sublist)])
+    def get_stoi(self, texts, tokenizer_func, unk_token='<unk>'):
+        tokens = list(set([item for sublist in texts for item in tokenizer_func(sublist)]))
+        tokens = [unk_token] + tokens
         stoi = collections.defaultdict(int, {v: k for k, v in enumerate(tokens)})
         return stoi
 

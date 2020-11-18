@@ -39,8 +39,8 @@ class QTLearner:
         self.emb_dim = emb_dim
         self.optimizer_class = optimizer_class
         self.tokenizer_func = tokenizer_func
-        self.WV_MODEL = load_pretrained_embeddings(self.embedding)
         self.train_iter, self.eval_iter, self.stoi = self.create_dataloaders(eval_p)
+        self.WV_MODEL = load_pretrained_embeddings(self.embedding, self.stoi)
         # model, optimizer, and loss function
         self.cuda = cuda
         self.device = 'cuda' if self.cuda else 'cpu'

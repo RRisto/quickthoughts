@@ -81,7 +81,31 @@ class VisdomLinePlotter(object):
                           update='append')
 
 
-def load_pretrained_embeddings(file_path):
+class WV_model:
+    def __init__(self, vocab, vectors):
+        self.vectors = vectors
+        self.vocab = vocab
+
+
+def match_embeddings_stoi(wv_model, vector_size, stoi):
+    matrix_len = len(stoi)
+    weights_matrix = np.zeros((matrix_len, vector_size))
+    words_found = 0
+
+    mean_vector = np.mean(wv_model.vectors, axis=0)
+
+    for i, word in enumerate(stoi):
+        try:
+            weights_matrix[i] = wv_model[word]
+            words_found += 1
+        except KeyError:
+            weights_matrix[i] = mean_vector
+
+    new_wv_model = WV_model(stoi, weights_matrix)
+    return new_wv_model
+
+
+def load_pretrained_embeddings(file_path, stoi):
     if file_path is None:
         return None
 
@@ -92,5 +116,8 @@ def load_pretrained_embeddings(file_path):
         WV_MODEL = KeyedVectors.load(file_path)
     else:
         WV_MODEL = api.load(file_path)
+
+    # kep vectors that are in stoi and initialize ones that are not
+    WV_MODEL = match_embeddings_stoi(WV_MODEL, WV_MODEL.vector_size, stoi)
 
     return WV_MODEL
