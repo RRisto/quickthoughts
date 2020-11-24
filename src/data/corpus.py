@@ -41,6 +41,7 @@ def create_train_eval_corpus(file_path, tokenizer_func, eval_p=0.2):
     with open(file_path) as f:
         examples = list(f)
         _LOGGER.info("Successfully read {} lines from file: {}".format(len(examples), file_path))
+    examples = [t for t in examples if t not in ['\n', '\t']]
     eval_start_i = int(len(examples) * (1 - eval_p))
     train_corpus = Corpus(examples[:eval_start_i], None, tokenizer_func=tokenizer_func)
     stoi = train_corpus.stoi
