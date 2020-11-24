@@ -241,6 +241,7 @@ class QTLearner:
                    emb_dim=CONFIG['emb_dim'],
                    test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                    test_downstream_datasets=CONFIG['downstream_eval_datasets'],
+                   tokenizer_func=CONFIG['tokenizer_func'],
                    optimizer_class=CONFIG['optimiser_class'])
 
     @classmethod
@@ -260,6 +261,7 @@ class QTLearner:
                       emb_dim=CONFIG['emb_dim'],
                       test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                       test_downstream_datasets=CONFIG['downstream_eval_datasets'],
+                      tokenizer_func=CONFIG['tokenizer_func'],
                       optimizer_class=CONFIG['optimiser_class'])
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
