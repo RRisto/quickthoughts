@@ -8,6 +8,7 @@ https://github.com/ryankiros/skip-thoughts/blob/master/eval_classification.py
 import logging
 import os
 import numpy as np
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -28,6 +29,10 @@ def load_encode_data(predict_vec_func, name, loc, seed=1, test_batch_size=100):
             pos = [line.decode('latin-1').strip() for line in f]
         with open(os.path.join(loc, 'rt10662/rt-polarity.neg'), 'rb') as f:
             neg = [line.decode('latin-1').strip() for line in f]
+    elif name == 'ET_sent':
+        df = pd.read_csv('data/et_valence/laused.tsv', sep='\t', header=None)
+        pos = df[df[0].isin(['pos', 'neu'])][1].tolist()
+        neg = df[df[0] == 'neg'][1].tolist()
     elif name == 'SUBJ':
         with open(os.path.join(loc, 'plot.tok.gt9.5000'), 'rb') as f:
             pos = [line.decode('latin-1').strip() for line in f]
