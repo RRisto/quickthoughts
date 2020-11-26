@@ -81,7 +81,7 @@ class QTLearner:
         scores = torch.matmul(enc_f, enc_g.t())
 
         # zero out when it's the same sentence
-        if torch.cuda.is_available() and self.device:
+        if torch.cuda.is_available() and self.cuda:
             mask = torch.eye(len(scores)).cuda().bool()
         else:
             mask = torch.eye(len(scores)).bool()
