@@ -42,7 +42,8 @@ class QTLearner:
         self.train_iter, self.eval_iter, self.stoi = self.create_dataloaders(eval_p)
         self.WV_MODEL = load_pretrained_embeddings(self.embedding, self.stoi)
         # model, optimizer, and loss function
-        self.device = 'cuda' if cuda else 'cpu'
+        self.cuda = cuda
+        self.device = 'cuda' if self.cuda else 'cpu'
         self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim,
                                 device=self.device).to(
             self.device)
@@ -80,7 +81,7 @@ class QTLearner:
         scores = torch.matmul(enc_f, enc_g.t())
 
         # zero out when it's the same sentence
-        if torch.cuda.is_available():
+        if torch.cuda.is_available() and self.device:
             mask = torch.eye(len(scores)).cuda().bool()
         else:
             mask = torch.eye(len(scores)).bool()
@@ -127,10 +128,10 @@ class QTLearner:
 
             # zero out
             try:
-                if torch.cuda.is_available():
+                if torch.cuda.is_available() and self.cuda:
                     torch.cuda.empty_cache()
                 optimizer.zero_grad()
-                if torch.cuda.is_available():
+                if torch.cuda.is_available() and self.cuda:
                     data = data.cuda()
 
                 loss, _ = self.fit_batch(qt, data, optimizer, mode)
@@ -141,7 +142,7 @@ class QTLearner:
             except Exception as e:
                 _LOGGER.exception(e)
                 failed_or_skipped_batches += 1
-                if torch.cuda.is_available():
+                if torch.cuda.is_available() and self.cuda:
                     torch.cuda.empty_cache()
         return loss, failed_or_skipped_batches
 
