@@ -8,9 +8,9 @@ import numpy as np
 
 
 class GRUEncoder(nn.Module):
-    def __init__(self, wv_model, hidden_size, bidirectional, dropout, vocab=None, emb_dim=300, cuda=False):
+    def __init__(self, wv_model, hidden_size, bidirectional, dropout, vocab=None, emb_dim=300, device=False):
         super(GRUEncoder, self).__init__()
-        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.device = device
         self.hidden_size = hidden_size
         if wv_model is None:
             self.embeddings = nn.Embedding(len(vocab), emb_dim)
@@ -72,13 +72,13 @@ class TransformerEncoder(nn.Module):
 
 class QuickThoughts(nn.Module):
 
-    def __init__(self, wv_model, vocab, hidden_size=1000, encoder='uni-gru', emb_dim=300, cuda=False):
+    def __init__(self, wv_model, vocab, hidden_size=1000, encoder='uni-gru', emb_dim=300, device=False):
         super(QuickThoughts, self).__init__()
-        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.device = device
         # self.enc_f = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
         # self.enc_g = TransformerEncoder(wv_model, hidden_size, cuda=cuda)
-        self.enc_f = GRUEncoder(wv_model, hidden_size, False, 0.3, vocab, emb_dim=emb_dim, cuda=cuda)
-        self.enc_g = GRUEncoder(wv_model, hidden_size, False, 0.3, vocab, emb_dim=emb_dim, cuda=cuda)
+        self.enc_f = GRUEncoder(wv_model, hidden_size, False, 0.3, vocab, emb_dim=emb_dim, device=self.device)
+        self.enc_g = GRUEncoder(wv_model, hidden_size, False, 0.3, vocab, emb_dim=emb_dim, device=self.device)
         log_param_info(self)
 
     # generate targets softmax
