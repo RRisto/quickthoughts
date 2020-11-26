@@ -243,7 +243,10 @@ class QTLearner:
                    test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                    test_downstream_datasets=CONFIG['downstream_eval_datasets'],
                    tokenizer_func=CONFIG['tokenizer_func'],
-                   optimizer_class=CONFIG['optimiser_class'])
+                   optimizer_class=CONFIG['optimiser_class'],
+                   eval_p=CONFIG['eval_p'],
+                   cuda=CONFIG['cuda']
+                   )
 
     @classmethod
     def create_from_checkpoint(cls, checkpoint_dir, checkpoint_file_name='checkpoint_latest.pth',
@@ -263,7 +266,10 @@ class QTLearner:
                       test_downstream_task_func=CONFIG['downstream_evaluation_func'],
                       test_downstream_datasets=CONFIG['downstream_eval_datasets'],
                       tokenizer_func=CONFIG['tokenizer_func'],
-                      optimizer_class=CONFIG['optimiser_class'])
+                      optimizer_class=CONFIG['optimiser_class'],
+                      eval_p=CONFIG['eval_p'],
+                      cuda=CONFIG['cuda']
+                      )
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
         learner.qt.load_state_dict(checkpoint_states['state_dict'])

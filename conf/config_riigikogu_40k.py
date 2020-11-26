@@ -5,15 +5,15 @@ import sentencepiece as spm
 
 from src_custom.eval import test_performances
 
-__base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
+__base_dir = os.getenv('DIR', os.getcwd())
 
 sp = spm.SentencePieceProcessor()
-sp.load('tokenizers/models/dev.model')
+sp.load('tokenizers/models/riigikogu_40k.model')
 
 CONFIG = {
     'base_dir': __base_dir,
-    'data_path': 'data/cleaned.txt',
-    'checkpoint_dir': 'checkpoints/dev',
+    'data_path': 'data/riigikogu_segments_sep_line_onöy_text.txt',
+    'checkpoint_dir': 'checkpoints/riigikogu_40k',
     'context_size': 1,
     # 'batch_size': 400,
     'batch_size': 50,
@@ -22,16 +22,16 @@ CONFIG = {
     'hidden_size': 1000,
     'num_epochs': 50,
     'lr': 5e-4,
-    'vocab_size': 10000,
+    'vocab_size': 38258,
     # 'tokenizer_func': tokenize, #gensim default tokenizer
     'tokenizer_func': sp.encode_as_pieces,  # sentencepiece tokenizer
     # 'embedding': 'glove-wiki-gigaword-50',  # default gensim embeddings
-    'embedding': 'embedding_models/dev_vectors.kv',  # custom sentencepiece embeddings
+    'embedding': 'embedding_models/riigikogu_w2v_40k.kv',  # custom sentencepiece embeddings
     # 'embedding': None,
     'emb_dim': 300,  # needed if embedding is False
     'optimiser_class': optim.Adam,
     'downstream_evaluation_func': test_performances,
-    'downstream_eval_datasets': ['MR'],
+    'downstream_eval_datasets': ['ET_sent'],
     'eval_p': 0.2,
     'cuda': False
 }
