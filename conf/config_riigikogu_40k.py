@@ -16,6 +16,7 @@ CONFIG = {
     'checkpoint_dir': 'checkpoints/riigikogu_40k',
     'context_size': 1,
     # 'batch_size': 400,
+    'seq_max_len': 50,
     'batch_size': 50,
     'test_batch_size': 1000,
     'norm_threshold': 5.0,

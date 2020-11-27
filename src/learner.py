@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class QTLearner:
-    def __init__(self, checkpoint_dir, embedding, data_path, batch_size, hidden_size, lr, num_epochs,
+    def __init__(self, checkpoint_dir, embedding, data_path, seq_max_len, batch_size, hidden_size, lr, num_epochs,
                  norm_threshold, emb_dim, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
                  config_file_name='config.json', optimizer_class=optim.Adam, metrics_filename='metrics.txt',
                  eval_p=0.2, cuda=False):
@@ -31,6 +31,7 @@ class QTLearner:
         self.metrics_filename = metrics_filename
         self.embedding = embedding
         self.data_path = data_path
+        self.seq_max_len = seq_max_len
         self.batch_size = batch_size
         self.hidden_size = hidden_size
         self.lr = lr
@@ -152,7 +153,8 @@ class QTLearner:
         return accs
 
     def create_dataloaders(self, eval_p=0.2):
-        bookcorpus_train, bookcorpus_eval, stoi = create_train_eval_corpus(self.data_path, self.tokenizer_func, eval_p)
+        bookcorpus_train, bookcorpus_eval, stoi = create_train_eval_corpus(self.data_path, self.tokenizer_func, eval_p,
+                                                                           self.seq_max_len)
         train_iter = DataLoader(bookcorpus_train,
                                 batch_size=self.batch_size,
                                 num_workers=1,
@@ -234,6 +236,7 @@ class QTLearner:
         return cls(checkpoint_dir=CONFIG['checkpoint_dir'],
                    embedding=CONFIG['embedding'],
                    data_path=CONFIG['data_path'],
+                   seq_max_len=CONFIG['seq_max_len'],
                    batch_size=CONFIG['batch_size'],
                    hidden_size=CONFIG['hidden_size'],
                    lr=CONFIG['lr'],
@@ -258,6 +261,7 @@ class QTLearner:
         learner = cls(checkpoint_dir=checkpoint_dir,
                       embedding=CONFIG['embedding'],
                       data_path=CONFIG['data_path'],
+                      seq_max_len=CONFIG['seq_max_len'],
                       batch_size=CONFIG['batch_size'],
                       hidden_size=CONFIG['hidden_size'], lr=CONFIG['lr'],
                       num_epochs=CONFIG['num_epochs'],
