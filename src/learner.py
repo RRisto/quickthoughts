@@ -46,8 +46,7 @@ class QTLearner:
         self.cuda = cuda
         self.device = 'cuda' if self.cuda else 'cpu'
         self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim,
-                                device=self.device).to(
-            self.device)
+                                device=self.device).to(self.device)
         self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
         self.test_downstream_task_func = test_downstream_task_func
