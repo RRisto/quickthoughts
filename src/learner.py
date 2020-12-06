@@ -13,6 +13,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
+from src.callback import CallbackHandler
+from src.lr_finder import LRFinder
+from src.sched import annealing_exp
 from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
 from src.utils import checkpoint_training, safe_pack_sequence, VisdomLinePlotter
@@ -25,7 +28,7 @@ class QTLearner:
     def __init__(self, checkpoint_dir, embedding, data_path, seq_max_len, batch_size, hidden_size, lr, num_epochs,
                  norm_threshold, emb_dim, test_downstream_task_func, test_downstream_datasets, tokenizer_func=tokenize,
                  config_file_name='config.json', optimizer_class=optim.Adam, metrics_filename='metrics.txt',
-                 eval_p=0.2, cuda=False):
+                 eval_p=0.2, cb=[], cuda=False):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.config_file_name = config_file_name
         self.metrics_filename = metrics_filename
@@ -45,12 +48,14 @@ class QTLearner:
         # model, optimizer, and loss function
         self.cuda = cuda
         self.device = 'cuda' if self.cuda else 'cpu'
-        self.qt = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim,
-                                device=self.device).to(self.device)
-        self.optimizer = self.optimizer_class(filter(lambda p: p.requires_grad, self.qt.parameters()), lr=self.lr)
+        self.model = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim,
+                                   device=self.device).to(self.device)
+        self.opt = self.optimizer_class(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self.lr)
         self.kl_loss = nn.KLDivLoss(reduction='batchmean')
         self.test_downstream_task_func = test_downstream_task_func
         self.test_downstream_task_datasets = test_downstream_datasets
+        self.cbs = CallbackHandler(cb)
+        self.cbs.set_learn(self)
 
     def gather_conf_info(self):
         return {'checkpoint_dir': str(self.checkpoint_dir),
@@ -67,12 +72,20 @@ class QTLearner:
     def _init_logging(self):
         _LOGGER.info(pformat(self.gather_conf_info()))
 
-    def forward_pass(self, qt, data, mode='train', return_only_embedding=False):
+    def lr_find(self, start_lr=1e-7, end_lr=10, num_it: int = 49, stop_div: bool = True, wd: float = None,
+                annealing_func=annealing_exp):
+        "Explore lr from `start_lr` to `end_lr` over `num_it` iterations in `learn`. If `stop_div`, stops when loss diverges."
+        cb = LRFinder(start_lr, end_lr, num_it, stop_div, annealing_func=annealing_func)
+        self.cbs.add_callback(cb)
+        epochs = int(np.ceil(num_it / len(self.train_iter)))
+        self.fit(False)
+
+    def forward_pass(self, data, mode='train', return_only_embedding=False):
         # forward pass
         if mode == 'train':
-            enc_f, enc_g = qt(data)
+            enc_f, enc_g = self.model(data)
         else:  # in eval mode returns concatenated enc_f and enc_g
-            enc = qt(data)
+            enc = self.model(data)
             if return_only_embedding:
                 return enc.detach().cpu().numpy()
             enc_f, enc_g = enc[:, :self.hidden_size], enc[:, self.hidden_size:]
@@ -91,32 +104,42 @@ class QTLearner:
         # return log scores and target
         block_log_scores = F.log_softmax(scores, dim=1)
         # targets also topelitz matrix
-        targets = qt.generate_targets(self.batch_size, offsetlist=[1])
+        targets = self.model.generate_targets(self.batch_size, offsetlist=[1])
         loss = self.kl_loss(block_log_scores, targets)
         return loss, block_log_scores
 
-    def fit_batch(self, qt, data, optimizer=None, mode='train'):
-        loss, block_log_scores = self.forward_pass(qt, data, mode)
+    def fit_batch(self, data, mode='train'):
+        if not self.cbs.begin_batch(data):
+            return
+
+        loss, block_log_scores = self.forward_pass(data, mode)
         if mode == 'train':
+            if not self.cbs.after_loss(loss):
+                return None, None
             loss.backward()
-            # grad clipping
-            nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, qt.parameters()), self.norm_threshold)
-            optimizer.step()
+            # grad clipping todo make callback
+            nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.model.parameters()), self.norm_threshold)
+            # optimizer.step()
+            if self.cbs.after_backward():
+                self.cbs.learn.opt.step()
+            if self.cbs.after_step():
+                self.cbs.learn.opt.zero_grad()
+
         return loss, block_log_scores
 
-    def fit_eval_epoch(self, train_data_iter, eval_data_iter, qt, optimizer, failed_or_skipped_batches):
+    def fit_eval_epoch(self, train_data_iter, eval_data_iter, failed_or_skipped_batches):
         loss_train, failed_or_skipped_batches_train = self.fit_epoch(train_data_iter, failed_or_skipped_batches,
-                                                                     optimizer, qt, mode='train')
+                                                                     mode='train')
         failed_or_skipped_batches += failed_or_skipped_batches_train
-        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, optimizer, qt, mode='eval')
-
+        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, mode='eval')
         return loss_train, loss_eval, failed_or_skipped_batches
 
-    def fit_epoch(self, data_iter, failed_or_skipped_batches, optimizer, qt, mode='train'):
+    def fit_epoch(self, data_iter, failed_or_skipped_batches, mode='train'):
+
         if mode == 'train':
-            qt.train()
+            self.model.train()
         else:
-            qt.eval()
+            self.model.eval()
 
         data_iter_tq = tqdm(data_iter)
         loss = 0
@@ -130,11 +153,11 @@ class QTLearner:
             try:
                 if torch.cuda.is_available() and self.cuda:
                     torch.cuda.empty_cache()
-                optimizer.zero_grad()
+                # optimizer.zero_grad()
                 if torch.cuda.is_available() and self.cuda:
                     data = data.cuda()
 
-                loss, _ = self.fit_batch(qt, data, optimizer, mode)
+                loss, _ = self.fit_batch(data, mode)
 
                 data_iter_tq.set_description(
                     "loss {} {:.4f} | failed/skipped {:3d}".format(mode, loss, failed_or_skipped_batches))
@@ -144,6 +167,9 @@ class QTLearner:
                 failed_or_skipped_batches += 1
                 if torch.cuda.is_available() and self.cuda:
                     torch.cuda.empty_cache()
+
+            if self.cbs.do_stop():
+                return None, None
         return loss, failed_or_skipped_batches
 
     def eval_downstream(self, qt, loc='data'):
@@ -170,30 +196,41 @@ class QTLearner:
         return train_iter, eval_iter, stoi
 
     def fit(self, plot=False):
+        if not self.cbs.begin_fit():
+            return
+
         self._init_logging()
         if plot:
             plotter = VisdomLinePlotter()
 
         # start training
-        self.qt = self.qt.train()
+        self.model = self.model.train()
         failed_or_skipped_batches = 0
         best_eval_loss = None
         for j in range(self.num_epochs):
-            loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(self.train_iter, self.eval_iter,
-                                                                                   self.qt,
-                                                                                   self.optimizer,
-                                                                                   failed_or_skipped_batches)
-            downstream_accs = self.eval_downstream(self.qt)
-            if best_eval_loss is None or best_eval_loss > loss_eval:
-                best_eval_loss = loss_eval
-                checkpoint_training(self.checkpoint_dir, j, self.qt, self.optimizer)
+            if not self.cbs.begin_epoch(j):
+                continue
 
-            if plot:
-                plotter.plot('loss', 'train', 'Loss train', j, loss_train.item(), xlabel='epoch')
-                plotter.plot('loss', 'eval', 'Loss eval', j, loss_eval.item(), xlabel='epoch')
-                for acc in downstream_accs:
-                    plotter.plot('acc', f'accuracy {acc[1]}', 'Downstream accuracy', j, acc[0], xlabel='epoch')
-            self.save_metrics(j, loss_train, loss_eval, downstream_accs, self.test_downstream_task_datasets)
+            loss_train, loss_eval, failed_or_skipped_batches = self.fit_eval_epoch(self.train_iter, self.eval_iter,
+                                                                                   failed_or_skipped_batches)
+
+            if self.cbs.begin_validate():  # todo maybe use other callback or pack it into callback
+                downstream_accs = self.eval_downstream(self.model)
+                if best_eval_loss is None or best_eval_loss > loss_eval:
+                    best_eval_loss = loss_eval
+                    checkpoint_training(self.checkpoint_dir, j, self.model, self.opt)
+
+                if plot:
+                    plotter.plot('loss', 'train', 'Loss train', j, loss_train.item(), xlabel='epoch')
+                    plotter.plot('loss', 'eval', 'Loss eval', j, loss_eval.item(), xlabel='epoch')
+                    for acc in downstream_accs:
+                        plotter.plot('acc', f'accuracy {acc[1]}', 'Downstream accuracy', j, acc[0], xlabel='epoch')
+                self.save_metrics(j, loss_train, loss_eval, downstream_accs, self.test_downstream_task_datasets)
+
+            if self.cbs.do_stop() or not self.cbs.after_epoch():
+                break
+
+        self.cbs.after_fit()
 
     def save_metrics(self, epoch, loss_train, loss_eval, donwstream_accs, downstream_datasets):
         metrics_file = self.checkpoint_dir / self.metrics_filename
@@ -205,7 +242,7 @@ class QTLearner:
             f.write(row)
 
     def predict(self, texts, batch_size=64):
-        self.qt.eval()
+        self.model.eval()
         eval_corpus = Corpus(texts, self.stoi, tokenizer_func=self.tokenizer_func, no_zeros=True)
         if len(eval_corpus) < batch_size:
             batch_size = len(eval_corpus)
@@ -218,7 +255,7 @@ class QTLearner:
         eval_iter_tq = tqdm(eval_iter)
         predictions = None
         for i, batch_data in enumerate(eval_iter_tq):
-            prediction = self.forward_pass(self.qt, batch_data, mode='eval', return_only_embedding=True)
+            prediction = self.forward_pass(batch_data, mode='eval', return_only_embedding=True)
             if predictions is None:
                 predictions = prediction
             else:
@@ -247,6 +284,7 @@ class QTLearner:
                    tokenizer_func=CONFIG['tokenizer_func'],
                    optimizer_class=CONFIG['optimiser_class'],
                    eval_p=CONFIG['eval_p'],
+                   cb=CONFIG['cb'],
                    cuda=CONFIG['cuda']
                    )
 
@@ -271,11 +309,12 @@ class QTLearner:
                       tokenizer_func=CONFIG['tokenizer_func'],
                       optimizer_class=CONFIG['optimiser_class'],
                       eval_p=CONFIG['eval_p'],
+                      cb=CONFIG['cb'],
                       cuda=CONFIG['cuda']
                       )
 
         checkpoint_states = torch.load(checkpoint_dir / checkpoint_file_name)
-        learner.qt.load_state_dict(checkpoint_states['state_dict'])
-        learner.optimizer.load_state_dict(checkpoint_states['optimizer'])
+        learner.model.load_state_dict(checkpoint_states['state_dict'])
+        learner.opt.load_state_dict(checkpoint_states['optimizer'])
 
         return learner

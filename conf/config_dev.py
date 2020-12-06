@@ -34,5 +34,6 @@ CONFIG = {
     'downstream_evaluation_func': test_performances,
     'downstream_eval_datasets': ['MR'],
     'eval_p': 0.2,
+    'cb': [],
     'cuda': False
 }
