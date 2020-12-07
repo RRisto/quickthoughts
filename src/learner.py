@@ -72,12 +72,12 @@ class QTLearner:
     def _init_logging(self):
         _LOGGER.info(pformat(self.gather_conf_info()))
 
-    def lr_find(self, start_lr=1e-7, end_lr=10, num_it: int = 49, stop_div: bool = True, wd: float = None,
+    def lr_find(self, start_lr=1e-7, end_lr=10, num_it: int = 100, stop_div: bool = True, wd: float = None,
                 annealing_func=annealing_exp):
         "Explore lr from `start_lr` to `end_lr` over `num_it` iterations in `learn`. If `stop_div`, stops when loss diverges."
-        cb = LRFinder(start_lr, end_lr, num_it, stop_div, annealing_func=annealing_func)
+        epochs = len(self.train_iter)
+        cb = LRFinder(start_lr, end_lr, epochs, stop_div, annealing_func=annealing_func)
         self.cbs.add_callback(cb)
-        epochs = int(np.ceil(num_it / len(self.train_iter)))
         self.fit(False)
 
     def forward_pass(self, data, mode='train', return_only_embedding=False):
@@ -127,13 +127,6 @@ class QTLearner:
 
         return loss, block_log_scores
 
-    def fit_eval_epoch(self, train_data_iter, eval_data_iter, failed_or_skipped_batches):
-        loss_train, failed_or_skipped_batches_train = self.fit_epoch(train_data_iter, failed_or_skipped_batches,
-                                                                     mode='train')
-        failed_or_skipped_batches += failed_or_skipped_batches_train
-        loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, mode='eval')
-        return loss_train, loss_eval, failed_or_skipped_batches
-
     def fit_epoch(self, data_iter, failed_or_skipped_batches, mode='train'):
 
         if mode == 'train':
@@ -160,7 +153,7 @@ class QTLearner:
                 loss, _ = self.fit_batch(data, mode)
 
                 data_iter_tq.set_description(
-                    "loss {} {:.4f} | failed/skipped {:3d}".format(mode, loss, failed_or_skipped_batches))
+                    f"loss {mode} {loss} | failed/skipped {failed_or_skipped_batches}")
 
             except Exception as e:
                 _LOGGER.exception(e)
@@ -169,8 +162,17 @@ class QTLearner:
                     torch.cuda.empty_cache()
 
             if self.cbs.do_stop():
-                return None, None
+                return loss, failed_or_skipped_batches
         return loss, failed_or_skipped_batches
+
+    def fit_eval_epoch(self, train_data_iter, eval_data_iter, failed_or_skipped_batches):
+        loss_train, failed_or_skipped_batches_train = self.fit_epoch(train_data_iter, failed_or_skipped_batches,
+                                                                     mode='train')
+        failed_or_skipped_batches += failed_or_skipped_batches_train
+        loss_eval = 0
+        if self.cbs.begin_validate():
+            loss_eval, _ = self.fit_epoch(eval_data_iter, failed_or_skipped_batches, mode='eval')
+        return loss_train, loss_eval, failed_or_skipped_batches
 
     def eval_downstream(self, qt, loc='data'):
         qt.eval()

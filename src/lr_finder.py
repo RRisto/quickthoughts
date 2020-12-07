@@ -47,6 +47,9 @@ class LRFinder(Callback):
         self.opt.lr = self.sched.step()
         return True
 
+    def begin_validate(self):
+        return False
+
     def after_epoch(self):
         if self.stop:
             return False

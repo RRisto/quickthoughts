@@ -17,7 +17,7 @@ CONFIG = {
     'context_size': 1,
     # 'batch_size': 400,
     'seq_max_len': 50,
-    'batch_size': 50,
+    'batch_size': 10,
     'test_batch_size': 1000,
     'norm_threshold': 5.0,
     'hidden_size': 1000,
