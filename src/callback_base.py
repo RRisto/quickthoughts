@@ -33,9 +33,11 @@ class CallbackHandler():
         self.learn = learn
         for cb in self.cbs:
             cb.learn = self.learn
+            cb.handler = self
 
     def add_callback(self, cb):
         cb.learn = self.learn
+        cb.handler = self
         self.cbs.append(cb)
 
     def begin_fit(self):
@@ -75,7 +77,8 @@ class CallbackHandler():
         return res
 
     def after_loss(self, loss):
-        res = self.in_train
+        # res = self.in_train
+        res = True
         for cb in self.cbs:
             res = res and cb.after_loss(loss)
         return res

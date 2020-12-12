@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from src.callback import Callback, CallbackHandler
-from src.sched import annealing_linear, Scheduler, annealing_exp
+from src.callback_base import Callback
+from src.sched import annealing_linear, Scheduler
 
 
 class LRFinder(Callback):
@@ -26,21 +26,23 @@ class LRFinder(Callback):
         return True
 
     def after_loss(self, loss):
-        "Determine if loss has runaway and we should stop."
-        self.avg_loss = self.beta * self.avg_loss + (1 - self.beta) * loss.item()
-        smooth_loss = self.avg_loss / (1 - self.beta ** (self.iteration + 1))
+        if self.handler.in_train:
+            "Determine if loss has runaway and we should stop."
+            self.avg_loss = self.beta * self.avg_loss + (1 - self.beta) * loss.item()
+            smooth_loss = self.avg_loss / (1 - self.beta ** (self.iteration + 1))
 
-        if self.iteration == 0 or smooth_loss < self.best_loss:
-            self.best_loss = smooth_loss
-            self.best_lr = self.opt.lr
-        self.lrs.append(self.opt.lr)
-        self.losses.append(smooth_loss)
-        self.iteration += 1
-        if self.sched.is_done or (self.stop_div and (smooth_loss > 4 * self.best_loss or np.isnan(smooth_loss))):
-            # We use the smoothed loss to decide on the stopping since it's less shaky.
-            if not self.stop:
-                self.stop = self.iteration
-            return False
+            if self.iteration == 0 or smooth_loss < self.best_loss:
+                self.best_loss = smooth_loss
+                self.best_lr = self.opt.lr
+            self.lrs.append(self.opt.lr)
+            self.losses.append(smooth_loss)
+            self.iteration += 1
+            if self.sched.is_done or (self.stop_div and (smooth_loss > 4 * self.best_loss or np.isnan(smooth_loss))):
+                # We use the smoothed loss to decide on the stopping since it's less shaky.
+                if not self.stop:
+                    self.stop = self.iteration
+                return False
+            return True
         return True
 
     def after_step(self):

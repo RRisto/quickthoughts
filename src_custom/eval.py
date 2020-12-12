@@ -71,7 +71,7 @@ def fit_clf(X_train, y_train, X_test, y_test, s):
     return acc
 
 
-def test_performances(predict_vec_func, datasets=['MR'], loc='', seed=1):
+def test_performances(predict_vec_func, datasets=['MR'], loc='data', seed=1):
     accs = []
     for dataset in datasets:
         text, labels, features = load_encode_data(predict_vec_func, dataset, loc=loc, seed=seed)

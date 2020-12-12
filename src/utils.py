@@ -1,6 +1,5 @@
 import logging
 import os
-import pickle
 
 import torch
 from visdom import Visdom
@@ -20,12 +19,6 @@ _LOGGER = logging.getLogger(__name__)
 def safe_pack_sequence(x):
     try:
         packed_batch = pack_sequence(x, enforce_sorted=False)
-        # targets = torch.zeros(len(x), len(x))
-        # for i, t1 in enumerate(x):
-        # for j in range(i+1, len(x)):
-        # targets[i, j] = len(np.setdiff1d(t1.numpy(),x[j].numpy()))
-        # targets += targets.t()
-
         return packed_batch
 
     except Exception as e:
@@ -38,7 +31,7 @@ def log_param_info(model):
             _LOGGER.debug("name: {} size: {}".format(name, param.data.shape))
 
 
-def checkpoint_training(checkpoint_dir, idx, model, optim, filename="checkpoint_latest"):
+def save_checkpoint(checkpoint_dir, idx, model, optim, filename="checkpoint_latest"):
     """checkpoint training, saves optimizer, model, and index"""
     checkpoint_dict = {
         'batch': idx,
@@ -48,17 +41,6 @@ def checkpoint_training(checkpoint_dir, idx, model, optim, filename="checkpoint_
     savepath = "{}/{}.pth".format(checkpoint_dir, filename)
     _LOGGER.info("Saving file at location : {}".format(savepath))
     torch.save(checkpoint_dict, savepath)
-
-
-def restore_training(checkpoint_dir, model, optimizer, filename="checkpoint_latest"):
-    """restore training from a checkpoint dir, returns batch"""
-    checkpoint = torch.load("{}/{}.pth".format(checkpoint_dir, filename))
-    print(checkpoint)
-    model.load_state_dict(checkpoint['state_dict'])
-    if optimizer:
-        optimizer.load_state_dict(checkpoint['optimizer'])
-    _LOGGER.info("Resuming training from index: {}".format(checkpoint['batch']))
-    return checkpoint['batch']
 
 
 class VisdomLinePlotter(object):

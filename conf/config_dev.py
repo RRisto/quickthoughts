@@ -3,6 +3,8 @@ from torch import optim
 from gensim.utils import tokenize
 import sentencepiece as spm
 
+from src.cb_eval import EvalSaveMetrics
+from src.utils import VisdomLinePlotter
 from src_custom.eval import test_performances
 
 __base_dir = os.getenv('DIR', 'C:/Users/risto/quickthoughts')
@@ -31,9 +33,9 @@ CONFIG = {
     # 'embedding': None,
     'emb_dim': 300,  # needed if embedding is False
     'optimiser_class': optim.Adam,
-    'downstream_evaluation_func': test_performances,
-    'downstream_eval_datasets': ['MR'],
     'eval_p': 0.2,
-    'cb': [],
+    # 'cbs': [EvalSaveMetrics(downstream_evaluation_func=test_performances, downstream_eval_datasets=['MR'],
+    #                         plotter=VisdomLinePlotter())],
+    'cbs': [],
     'cuda': False
 }
