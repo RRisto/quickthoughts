@@ -34,8 +34,8 @@ CONFIG = {
     'emb_dim': 300,  # needed if embedding is False
     'optimiser_class': optim.Adam,
     'eval_p': 0.2,
-    # 'cbs': [EvalSaveMetrics(downstream_evaluation_func=test_performances, downstream_eval_datasets=['MR'],
-    #                         plotter=VisdomLinePlotter())],
-    'cbs': [],
+    'cbs': [EvalSaveMetrics(downstream_evaluation_func=test_performances, downstream_eval_datasets=['MR'],
+                            plotter=VisdomLinePlotter())],
+    # 'cbs': [],
     'cuda': False
 }

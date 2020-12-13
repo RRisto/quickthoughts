@@ -41,6 +41,7 @@ class LRFinder(Callback):
                 # We use the smoothed loss to decide on the stopping since it's less shaky.
                 if not self.stop:
                     self.stop = self.iteration
+                    self.learn.stop = True
                 return False
             return True
         return True
@@ -50,15 +51,10 @@ class LRFinder(Callback):
         return True
 
     def begin_validate(self):
-        return False
-
-    def after_epoch(self):
-        if self.stop:
-            return False
-
-    def after_fit(self):
         plt.plot(self.lrs[5:-5], self.losses[5:-5])
         plt.xscale('log')
         plt.show()
         print(f'Best loss {round(self.best_loss, 3)}')
         print(f'Best lr {round(self.best_lr, 3)}')
+        self.learn.stop = True  # will set cb_handler do_stop() True no reason to continue
+        return False

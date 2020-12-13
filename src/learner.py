@@ -44,7 +44,6 @@ class QTLearner:
         self.tokenizer_func = tokenizer_func
         self.train_iter, self.eval_iter, self.stoi = self.create_dataloaders(eval_p)
         self.WV_MODEL = load_pretrained_embeddings(self.embedding, self.stoi)
-        # model, optimizer, and loss function
         self.cuda = cuda
         self.device = 'cuda' if self.cuda else 'cpu'
         self.model = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim,
@@ -69,12 +68,20 @@ class QTLearner:
     def _init_logging(self):
         _LOGGER.info(pformat(self.gather_conf_info()))
 
-    def lr_find(self, start_lr=1e-7, end_lr=10, num_it: int = 100, stop_div: bool = True, annealing_func=annealing_exp):
-        "Explore lr from `start_lr` to `end_lr` over `num_it` iterations in `learn`. If `stop_div`, stops when loss diverges."
+    def lr_find(self, start_lr=1e-7, end_lr=10, max_num_it=100, stop_div: bool = True, annealing_func=annealing_exp):
+        """Explore lr from `start_lr` to `end_lr` over one epoch of minibatches (maximum max_num_it number of minibatches)
+        iterations in `learn`. If `stop_div`, stops when loss diverges."""
         epochs = len(self.train_iter)
-        cb = LRFinder(start_lr, end_lr, epochs, stop_div, annealing_func=annealing_func)
+        num_it = min(epochs, max_num_it)
+        cb = LRFinder(start_lr, end_lr, num_it, stop_div, annealing_func=annealing_func)
         self.cbs.add_callback(cb)
         self.fit()
+        self.reset_model()
+
+    def reset_model(self):
+        self.model = QuickThoughts(self.WV_MODEL, self.stoi, self.hidden_size, emb_dim=self.emb_dim,
+                                   device=self.device).to(self.device)
+        self.opt = self.optimizer_class(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self.lr)
 
     def forward_pass(self, data, mode='train', return_only_embedding=False):
         # forward pass
@@ -88,7 +95,6 @@ class QTLearner:
 
         # calculate scores
         scores = torch.matmul(enc_f, enc_g.t())
-
         # zero out when it's the same sentence
         if torch.cuda.is_available() and self.cuda:
             mask = torch.eye(len(scores)).cuda().bool()
@@ -106,7 +112,7 @@ class QTLearner:
 
     def fit_batch(self, data, mode='train'):
         if not self.cbs.begin_batch(data):
-            return
+            return None, None
 
         loss, block_log_scores = self.forward_pass(data, mode)
         if not self.cbs.after_loss(loss):
@@ -115,7 +121,6 @@ class QTLearner:
             loss.backward()
             # grad clipping todo make callback
             nn.utils.clip_grad_norm_(filter(lambda p: p.requires_grad, self.model.parameters()), self.norm_threshold)
-            # optimizer.step()
             if self.cbs.after_backward():
                 self.cbs.learn.opt.step()
             if self.cbs.after_step():
@@ -196,6 +201,7 @@ class QTLearner:
         self.model = self.model.train()
         failed_or_skipped_batches = 0
         best_eval_loss = None
+
         for j in range(self.num_epochs):
             if not self.cbs.begin_epoch(j):
                 continue
