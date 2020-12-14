@@ -1,9 +1,9 @@
 import os
 from torch import optim
-from gensim.utils import tokenize
 import sentencepiece as spm
 
-from src.cb_eval import EvalSaveMetrics
+from src.callbacks.cb_eval import EvalSaveMetrics
+from src.callbacks.one_cycle import OneCycle
 from src.utils import VisdomLinePlotter
 from src_custom.eval import test_performances
 
@@ -34,8 +34,10 @@ CONFIG = {
     'emb_dim': 300,  # needed if embedding is False
     'optimiser_class': optim.Adam,
     'eval_p': 0.2,
-    'cbs': [EvalSaveMetrics(downstream_evaluation_func=test_performances, downstream_eval_datasets=['MR'],
-                            plotter=VisdomLinePlotter())],
+    'cbs': [EvalSaveMetrics(downstream_evaluation_func=test_performances,
+                            downstream_eval_datasets=['MR'],
+                            plotter=VisdomLinePlotter()),
+            OneCycle()],
     # 'cbs': [],
     'cuda': False
 }

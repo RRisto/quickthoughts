@@ -14,7 +14,7 @@ import torch.optim as optim
 import numpy as np
 
 from src.callback_base import CallbackHandler
-from src.lr_finder import LRFinder
+from src.callbacks.lr_finder import LRFinder
 from src.sched import annealing_exp
 from src.utils import load_pretrained_embeddings
 from src.qt_model import QuickThoughts
