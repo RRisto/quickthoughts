@@ -26,3 +26,4 @@ class OneCycle(Callback):
             lr = (1 - pct) * self.base_lr
         self.learn.opt.lr = lr
         self.lrs.append(lr)
+        return True
